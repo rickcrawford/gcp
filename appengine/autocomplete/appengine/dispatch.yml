@@ -1,0 +1,10 @@
+# dispatch:
+#   # Default service serves simple hostname request.
+#   - url: "service.typeahead.com/*"
+#     service: autocomplete
+#    # Default service serves simple hostname request.
+#   - url: "b.43b.io/*"
+#     service: beacon
+#   # Default service serves simple hostname request.
+#   - url: "43b.io/*"
+#     service: beacon

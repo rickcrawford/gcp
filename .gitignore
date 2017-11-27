@@ -1,0 +1,10 @@
+.DS_Store
+gcp-credential.json
+node_modules
+.settings
+.classpath
+.project
+target
+dataflow/tokenizer/input/*.json
+dataflow/tokenizer/input/*.gz
+output

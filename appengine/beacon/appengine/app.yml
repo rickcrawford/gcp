@@ -1,0 +1,17 @@
+runtime: go
+api_version: go1.8
+service: beacon
+
+env_variables:
+  BIGTABLE_PROJECT_ID: 'typeahead-183622'
+  BIGTABLE_INSTANCE_ID: 'typeahead-data'
+  
+inbound_services:
+- warmup
+
+handlers:
+- url: /_ah/warmup
+  script: _go_app
+  login: admin
+- url: /.*
+  script: _go_app

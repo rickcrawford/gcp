@@ -1,0 +1,4 @@
+Beacon
+------------
+
+Records beacons
