@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"google.golang.org/appengine"
 
-	"github.com/rickcrawford/beacon/handlers"
+	"github.com/rickcrawford/gcp/appengine/beacon/handlers"
 )
 
 func main() {

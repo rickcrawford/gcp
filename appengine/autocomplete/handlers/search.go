@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/rickcrawford/autocomplete/common"
-	"github.com/rickcrawford/autocomplete/managers"
-	"github.com/rickcrawford/autocomplete/models"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/common"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/managers"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/models"
 )
 
 type searchHandler struct {

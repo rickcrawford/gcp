@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rickcrawford/autocomplete.es/commands"
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/commands"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/rickcrawford/autocomplete.trie/managers"
+	"github.com/rickcrawford/gcp/appengine/autocomplete.trie/managers"
 )
 
 type ngramHandler struct {

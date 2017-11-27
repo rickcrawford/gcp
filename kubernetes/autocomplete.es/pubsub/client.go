@@ -8,7 +8,8 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	"github.com/pkg/errors"
-	"github.com/rickcrawford/beacon/models"
+
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
 )
 
 // ProductUpdate message identifies items to index

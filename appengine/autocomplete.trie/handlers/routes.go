@@ -6,8 +6,8 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 
-	"github.com/rickcrawford/autocomplete.trie/managers"
-	m "github.com/rickcrawford/autocomplete.trie/middleware"
+	"github.com/rickcrawford/gcp/appengine/autocomplete.trie/managers"
+	m "github.com/rickcrawford/gcp/appengine/autocomplete.trie/middleware"
 )
 
 func GetRoutes(titles, ngrams managers.Searcher) http.Handler {

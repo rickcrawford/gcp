@@ -8,9 +8,9 @@ import (
 
 	"github.com/go-chi/chi"
 
-	"github.com/rickcrawford/autocomplete/common"
-	"github.com/rickcrawford/autocomplete/managers"
-	"github.com/rickcrawford/autocomplete/models"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/common"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/managers"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/models"
 )
 
 type productCtxID int

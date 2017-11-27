@@ -14,7 +14,7 @@ import (
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/taskqueue"
 
-	"github.com/rickcrawford/beacon/managers"
+	"github.com/rickcrawford/gcp/appengine/beacon/managers"
 )
 
 const (

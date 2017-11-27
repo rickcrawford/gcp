@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/rickcrawford/autocomplete.trie/handlers"
-	"github.com/rickcrawford/autocomplete.trie/managers"
+	"github.com/rickcrawford/gcp/appengine/autocomplete.trie/handlers"
+	"github.com/rickcrawford/gcp/appengine/autocomplete.trie/managers"
 )
 
 func main() {

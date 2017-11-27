@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/rickcrawford/autocomplete.trie/managers"
+	"github.com/rickcrawford/gcp/appengine/autocomplete.trie/managers"
 )
 
 type Response struct {

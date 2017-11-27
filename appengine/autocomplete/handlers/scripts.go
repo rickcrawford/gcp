@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rickcrawford/autocomplete/models"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/models"
 )
 
 const autocompleteScript = `

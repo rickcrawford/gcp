@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/rickcrawford/autocomplete.es/models"
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
 	elastic "gopkg.in/olivere/elastic.v5"
 )
 

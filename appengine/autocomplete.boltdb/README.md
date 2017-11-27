@@ -1,4 +1,4 @@
-typeahead
+autocomplete boltdb
 ----------
 
 Simple autocomplete service for catalogs.

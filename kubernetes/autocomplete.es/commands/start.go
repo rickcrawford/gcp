@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"net/url"
@@ -16,9 +15,9 @@ import (
 	"github.com/spf13/viper"
 	elastic "gopkg.in/olivere/elastic.v5"
 
-	"github.com/rickcrawford/autocomplete.es/handlers"
-	"github.com/rickcrawford/autocomplete.es/models"
-	"github.com/rickcrawford/autocomplete.es/pubsub"
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/handlers"
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/pubsub"
 )
 
 func start(sig <-chan os.Signal) bool {
@@ -26,8 +25,6 @@ func start(sig <-chan os.Signal) bool {
 	log.Println("starting application")
 
 	go func() {
-		ctx := context.Background()
-
 		redisURL, err := url.Parse(viper.GetString("redis-url"))
 		if err != nil {
 			log.Fatal("error connecting to redis", err)
@@ -68,9 +65,6 @@ func start(sig <-chan os.Signal) bool {
 			log.Fatal("error starting pubsub client", err)
 		}
 		defer pubSubClient.Close()
-
-		// setup Elastic Search
-		go indexer(ctx, pubSubClient, esClient)
 
 		clientArgs := models.ClientArgs{
 			ES:        esClient,

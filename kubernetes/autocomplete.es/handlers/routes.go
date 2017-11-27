@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi"
 	"google.golang.org/api/iterator"
 
-	"github.com/rickcrawford/autocomplete.es/models"
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
 )
 
 func GetRoutes(args models.ClientArgs) http.Handler {

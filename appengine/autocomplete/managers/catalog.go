@@ -10,8 +10,8 @@ import (
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/search"
 
-	"github.com/rickcrawford/autocomplete/common"
-	"github.com/rickcrawford/autocomplete/models"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/common"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/models"
 )
 
 // CatalogManager interacts with a catalog

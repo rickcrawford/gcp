@@ -5,7 +5,7 @@ import (
 
 	"google.golang.org/appengine/search"
 
-	"github.com/rickcrawford/autocomplete/common"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/common"
 )
 
 // SearchQuery is a query to perform

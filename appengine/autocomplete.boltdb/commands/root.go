@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -9,10 +9,8 @@ import (
 	"syscall"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/rickcrawford/hobson/proxy/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 )
 
 var configFile string
@@ -46,9 +44,8 @@ func init() {
 
 // RootCmd is the main command to run the application
 var RootCmd = &cobra.Command{
-	Use:   "ta",
-	Short: "Typeahead Engine",
-	Long:  bannerMsg,
+	Use:   "autocomplete.boltdb",
+	Short: "Boltdb Engine",
 
 	// parse the config if one is provided, or use the defaults. Set the backend
 	// driver to be used
@@ -59,19 +56,12 @@ var RootCmd = &cobra.Command{
 }
 
 func preRun(ccmd *cobra.Command, args []string) {
-	if viper.GetBool("debug") {
-		log.SetDebug()
-	}
-
-	logger := log.Logger()
-
 	// if --config is passed, attempt to parse the config file
 	if configFile != "" {
 		// get the filepath
 		abs, err := filepath.Abs(configFile)
 		if err != nil {
-			logger.Fatal("Error reading filepath", zap.Error(err))
-			os.Exit(1)
+			log.Fatal("Error reading filepath", err)
 		}
 
 		// get the config name
@@ -86,12 +76,12 @@ func preRun(ccmd *cobra.Command, args []string) {
 
 		// Find and read the config file; Handle errors reading the config file
 		if err := viper.ReadInConfig(); err != nil {
-			logger.Fatal("Failed to read config file", zap.Error(err))
+			log.Fatal("Failed to read config file", err)
 			os.Exit(1)
 		}
 		viper.WatchConfig()
 		viper.OnConfigChange(func(e fsnotify.Event) {
-			logger.Info("Config file changed", zap.String("file", e.Name))
+			log.Println("Config file changed", e.Name)
 			// Send a HUP signal to restart
 			if p, err := os.FindProcess(os.Getpid()); err == nil {
 				p.Signal(os.Interrupt)
@@ -101,14 +91,6 @@ func preRun(ccmd *cobra.Command, args []string) {
 }
 
 func run(cmd *cobra.Command, args []string) {
-	if !viper.GetBool("quiet") {
-		fmt.Println(bannerMsg)
-		fmt.Println()
-	}
-
-	// make sure logger syncs
-	defer log.Sync()
-
 	// track signals
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM)

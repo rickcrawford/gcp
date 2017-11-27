@@ -5,8 +5,8 @@ import (
 
 	"github.com/go-chi/chi"
 
-	"github.com/rickcrawford/autocomplete/managers"
-	"github.com/rickcrawford/autocomplete/middleware"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/managers"
+	"github.com/rickcrawford/gcp/appengine/autocomplete/middleware"
 )
 
 // GetRoutes returns routes for handlers
