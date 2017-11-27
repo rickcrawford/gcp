@@ -1,3 +1,6 @@
+.venv
+products.json.gz
+__pycache__
 .DS_Store
 gcp-credential.json
 node_modules
