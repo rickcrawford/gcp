@@ -37,6 +37,7 @@ func main() {
 			}
 			conn.Close()
 		}
+		// test
 
 		hosts := []string{"http://" + os.Getenv("ELASTICSEARCH_PORT_9200_TCP_ADDR") + ":9200"}
 		login := "elastic"
