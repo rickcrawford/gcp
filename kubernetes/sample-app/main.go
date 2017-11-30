@@ -13,20 +13,20 @@ import (
 
 func main() {
 
-	redisHost := os.Getenv("REDIS_SERVICE_HOST")
-	redisPort := os.Getenv("REDIS_SERVICE_PORT")
-	redisTarget := fmt.Sprintf("%s:%s", redisHost, redisPort)
+	// redisHost := os.Getenv("REDIS_SERVICE_HOST")
+	// redisPort := os.Getenv("REDIS_SERVICE_PORT")
+	// redisTarget := fmt.Sprintf("%s:%s", redisHost, redisPort)
 
-	elasticHost := os.Getenv("ELASTICSEARCH_SERVICE_HOST")
-	elasticPort := os.Getenv("ELASTICSEARCH_SERVICE_PORT")
-	elasticTarget := fmt.Sprintf("%s:%s", elasticHost, elasticPort)
+	// elasticHost := os.Getenv("ELASTICSEARCH_SERVICE_HOST")
+	// elasticPort := os.Getenv("ELASTICSEARCH_SERVICE_PORT")
+	// elasticTarget := fmt.Sprintf("%s:%s", elasticHost, elasticPort)
 
 	http.HandleFunc("/status", func(rw http.ResponseWriter, req *http.Request) {
 		for _, key := range os.Environ() {
 			fmt.Fprintln(rw, key)
 		}
 
-		conn, err := redigo.Dial("tcp", redisTarget)
+		conn, err := redigo.Dial("tcp", "redis:6379")
 		if err != nil {
 			fmt.Fprintln(rw, "redis error", err)
 		} else {
@@ -38,7 +38,7 @@ func main() {
 			conn.Close()
 		}
 
-		hosts := []string{elasticTarget}
+		hosts := []string{"http://elasticsearch:9200"}
 		login := "elastic"
 		password := "changeme"
 		options := make([]elastic.ClientOptionFunc, 0)
