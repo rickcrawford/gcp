@@ -5,9 +5,9 @@ metadata:
   labels:
     component: elasticsearch
 spec:
-  type: LoadBalancer
-  selector:
-    component: elasticsearch
+  # type: LoadBalancer
+  # selector:
+  #   component: elasticsearch
   ports:
   - name: http
     port: 9200

@@ -38,7 +38,7 @@ func main() {
 			conn.Close()
 		}
 
-		hosts := []string{"http://elasticsearch:9200"}
+		hosts := []string{"http://es:9200"}
 		login := "elastic"
 		password := "changeme"
 		options := make([]elastic.ClientOptionFunc, 0)
