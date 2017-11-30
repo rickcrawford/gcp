@@ -48,7 +48,7 @@ func main() {
 		}
 		options = append(options, elastic.SetTraceLog(log.New(os.Stdout, "", log.LstdFlags)))
 
-		client, err := elastic.NewClient(options...)
+		client, err := elastic.NewSimpleClient(elastic.SetURL("http://elasticsearch:9200"))
 		if err != nil {
 			fmt.Fprintln(rw, "elastic error", err)
 		} else {
