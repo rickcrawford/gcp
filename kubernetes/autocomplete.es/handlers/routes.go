@@ -6,13 +6,16 @@ import (
 	"net/http"
 
 	"cloud.google.com/go/storage"
+	redigo "github.com/garyburd/redigo/redis"
 	"github.com/go-chi/chi"
 	"google.golang.org/api/iterator"
 
-	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/elastic"
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/pubsub"
 )
 
-func GetRoutes(args models.ClientArgs) http.Handler {
+// GetRoutes returns the routes for this application
+func GetRoutes(esClient *elastic.Client, pubSubClient *pubsub.Client, redisPool *redigo.Pool) http.Handler {
 	r := chi.NewRouter()
 
 	r.Get("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

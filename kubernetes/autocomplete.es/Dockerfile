@@ -1,7 +1,7 @@
 FROM golang
 
-COPY . /go/src/github.com/rickcrawford/autocomplete.es
-WORKDIR /go/src/github.com/rickcrawford/autocomplete.es
+COPY . /go/src/github.com/rickcrawford/gcp/kubernetes/autocomplete.es
+WORKDIR /go/src/github.com/rickcrawford/gcp/kubernetes/autocomplete.es
 
 RUN update-ca-certificates
 RUN go-wrapper download

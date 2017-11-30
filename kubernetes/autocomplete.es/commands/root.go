@@ -17,7 +17,6 @@ var configFile string
 
 func init() {
 	// set config defaults
-	viper.SetDefault("garbage-collect", false)
 	viper.SetConfigType("yml")
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
@@ -25,12 +24,16 @@ func init() {
 	// flags
 	RootCmd.PersistentFlags().StringP("conf-dir", "", "./conf", "Configuration Directory")
 	RootCmd.PersistentFlags().StringP("elastic-url", "", "http://localhost:9200", "Elastic Search URL")
+	RootCmd.PersistentFlags().StringP("elastic-login", "", "elastic", "Elastic Search Login")
+	RootCmd.PersistentFlags().StringP("elastic-password", "", "changeme", "Elastic Search Password")
+	RootCmd.PersistentFlags().StringP("elastic-index-name", "", "autocomplete", "Elastic Search Index Name")
 	RootCmd.PersistentFlags().StringP("redis-url", "", "redis://localhost:6379", "Redis URL")
 	RootCmd.PersistentFlags().StringP("project-id", "", "typeahead-183622", "Project ID")
 	RootCmd.PersistentFlags().StringP("topic-name", "", "updates", "PubSub Topic Name")
 	RootCmd.PersistentFlags().StringP("subscription-name", "", "autocomplete.es", "PubSub Subscription Name")
 	RootCmd.PersistentFlags().IntP("http-port", "", 8080, "HTTP port")
 	RootCmd.PersistentFlags().IntP("https-port", "", 8443, "HTTPS port")
+	RootCmd.PersistentFlags().BoolP("debug", "", false, "Enable debugging")
 
 	// config
 	viper.BindPFlag("conf-dir", RootCmd.PersistentFlags().Lookup("conf-dir"))
@@ -41,6 +44,7 @@ func init() {
 	viper.BindPFlag("subscription-name", RootCmd.PersistentFlags().Lookup("subscription-name"))
 	viper.BindPFlag("http-port", RootCmd.PersistentFlags().Lookup("http-port"))
 	viper.BindPFlag("https-port", RootCmd.PersistentFlags().Lookup("https-port"))
+	viper.BindPFlag("debug", RootCmd.PersistentFlags().Lookup("debug"))
 
 	// local flags;
 	RootCmd.Flags().StringVar(&configFile, "config", "", "/path/to/config.yml")

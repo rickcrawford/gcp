@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
 	elastic "gopkg.in/olivere/elastic.v5"
+
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
 )
 
 const mappingType = "product"
@@ -53,7 +54,7 @@ const mapping = `
 				},
 				"upc":{
 					"type":"text",
-					"index":"not_analyzed"
+					"index":false
 				},
 				"category":{
 					"type":"object"
@@ -67,7 +68,7 @@ const mapping = `
 				},				
 				"model":{
 					"type":"text",
-					"index":"not_analyzed"
+					"index":false
 				},
 				"url":{
 					"type":"text",
@@ -91,6 +92,9 @@ const mapping = `
 					"type":"date"
 				},
 				"suggestion":{
+					"type":"completion"
+				},
+				"keywords":{
 					"type":"completion"
 				},
 				"name_autocomplete":{
@@ -218,8 +222,17 @@ func (c *Client) DeleteIndex() error {
 }
 
 // NewClient creates an es client
-func NewClient(hosts []string, login, password, indexName string) (*Client, error) {
-	client, err := elastic.NewClient(elastic.SetSniff(false), elastic.SetURL(hosts...), elastic.SetBasicAuth(login, password), elastic.SetTraceLog(log.New(os.Stdout, "", log.LstdFlags)))
+func NewClient(hosts []string, login, password, indexName string, debug bool) (*Client, error) {
+	options := make([]elastic.ClientOptionFunc, 0)
+	options = append(options, elastic.SetSniff(false), elastic.SetURL(hosts...))
+	if login != "" {
+		options = append(options, elastic.SetBasicAuth(login, password))
+	}
+	if debug {
+		options = append(options, elastic.SetTraceLog(log.New(os.Stdout, "", log.LstdFlags)))
+	}
+
+	client, err := elastic.NewClient(options...)
 	if err != nil {
 		return nil, err
 	}

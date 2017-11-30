@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -13,19 +14,37 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/spf13/viper"
-	elastic "gopkg.in/olivere/elastic.v5"
 
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/elastic"
 	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/handlers"
-	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
 	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/pubsub"
 )
+
+var envRedisTarget string
+var envElasticTarget string
+
+func init() {
+	redisHost := os.Getenv("REDIS_SERVICE_HOST")
+	redisPort := os.Getenv("REDIS_SERVICE_PORT")
+	envRedisTarget = fmt.Sprintf("redis://%s:%s", redisHost, redisPort)
+
+	elasticHost := os.Getenv("ELASTICSEARCH_SERVICE_HOST")
+	elasticPort := os.Getenv("ELASTICSEARCH_SERVICE_PORT")
+	envElasticTarget = fmt.Sprintf("http://%s:%s", elasticHost, elasticPort)
+}
 
 func start(sig <-chan os.Signal) bool {
 	var exit bool
 	log.Println("starting application")
 
 	go func() {
-		redisURL, err := url.Parse(viper.GetString("redis-url"))
+
+		redisTarget := viper.GetString("redis-url")
+		if redisTarget == "" {
+			redisTarget = envRedisTarget
+		}
+
+		redisURL, err := url.Parse(redisTarget)
 		if err != nil {
 			log.Fatal("error connecting to redis", err)
 		}
@@ -50,9 +69,20 @@ func start(sig <-chan os.Signal) bool {
 
 		defer redisPool.Close()
 
-		esClient, err := elastic.NewClient(elastic.SetSniff(false), elastic.SetURL(strings.Split(viper.GetString("elastic-url"), ",")...), elastic.SetBasicAuth("elastic", "changeme"))
+		elasticTarget := viper.GetString("elastic-url")
+		if elasticTarget == "" {
+			elasticTarget = envElasticTarget
+		}
+
+		elasticHosts := strings.Split(elasticTarget, ",")
+		elasticLogin := viper.GetString("elastic-login")
+		elasticPassword := viper.GetString("elastic-password")
+		indexName := viper.GetString("elastic-index-name")
+		debug := viper.GetBool("debug")
+
+		esClient, err := elastic.NewClient(elasticHosts, elasticLogin, elasticPassword, indexName, debug)
 		if err != nil {
-			log.Fatal("error connecting to elastic", err, viper.GetString("elastic-url"))
+			log.Fatal("error loading search", err)
 		}
 
 		// setup PubSub
@@ -66,17 +96,12 @@ func start(sig <-chan os.Signal) bool {
 		}
 		defer pubSubClient.Close()
 
-		clientArgs := models.ClientArgs{
-			ES:        esClient,
-			RedisPool: redisPool,
-		}
-
 		router := chi.NewRouter()
 		router.Use(middleware.RealIP)
 		router.Use(middleware.Recoverer)
 		router.Use(middleware.DefaultCompress)
 
-		router.Mount("/", handlers.GetRoutes(clientArgs))
+		router.Mount("/", handlers.GetRoutes(esClient, pubSubClient, redisPool))
 
 		// // set the application namespaace, and appengine context
 		// http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

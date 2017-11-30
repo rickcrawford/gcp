@@ -31,3 +31,8 @@ Systems involved
 - Cloud CDN
 - Cloud SQL
 - Cloud Persistent Disk (possible)
+
+
+
+TODO:
+Use Kubernetes config map to manage secrets and environment variables for elastic/redis

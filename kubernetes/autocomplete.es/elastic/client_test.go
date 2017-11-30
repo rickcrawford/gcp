@@ -8,8 +8,7 @@ import (
 )
 
 func TestClient(t *testing.T) {
-
-	client, err := NewClient([]string{"http://localhost:9200"}, "elastic", "changeme", "testindex")
+	client, err := NewClient([]string{"http://localhost:9200"}, "elastic", "changeme", "testindex", true)
 	if err != nil {
 		t.Fatal(err)
 	}

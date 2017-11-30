@@ -1,0 +1,65 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+
+	redigo "github.com/garyburd/redigo/redis"
+	"github.com/olivere/elastic"
+)
+
+func main() {
+
+	redisHost := os.Getenv("REDIS_SERVICE_HOST")
+	redisPort := os.Getenv("REDIS_SERVICE_PORT")
+	redisTarget := fmt.Sprintf("%s:%s", redisHost, redisPort)
+
+	elasticHost := os.Getenv("ELASTICSEARCH_SERVICE_HOST")
+	elasticPort := os.Getenv("ELASTICSEARCH_SERVICE_PORT")
+	elasticTarget := fmt.Sprintf("%s:%s", elasticHost, elasticPort)
+
+	http.HandleFunc("/status", func(rw http.ResponseWriter, req *http.Request) {
+		for _, key := range os.Environ() {
+			fmt.Fprintln(rw, key)
+		}
+
+		conn, err := redigo.Dial("tcp", redisTarget)
+		if err != nil {
+			fmt.Fprintln(rw, "redis error", err)
+		} else {
+
+			_, err = conn.Do("PING")
+			if err != nil {
+				fmt.Fprintln(rw, "ping error", err)
+			}
+			conn.Close()
+		}
+
+		hosts := []string{elasticTarget}
+		login := "elastic"
+		password := "changeme"
+		options := make([]elastic.ClientOptionFunc, 0)
+		options = append(options, elastic.SetSniff(false), elastic.SetURL(hosts...))
+		if login != "" {
+			options = append(options, elastic.SetBasicAuth(login, password))
+		}
+		options = append(options, elastic.SetTraceLog(log.New(os.Stdout, "", log.LstdFlags)))
+
+		client, err := elastic.NewClient(options...)
+		if err != nil {
+			fmt.Fprintln(rw, "elastic error", err)
+		} else {
+			info, err := client.NodesInfo().Do(context.Background())
+			if err != nil {
+				fmt.Fprintln(rw, "elastic info error", err)
+			}
+			fmt.Fprintln(rw, "cluster name", info.ClusterName)
+		}
+
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}

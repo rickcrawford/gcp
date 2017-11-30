@@ -31,5 +31,6 @@ type Product struct {
 
 	// the following fields are not part of the feed but can be used to influence results
 	Suggestion []Suggestion `json:"suggestion,omitempty"`
+	Keywords   []Suggestion `json:"keywords,omitempty"`
 	Weight     float64      `json:"weight"`
 }
