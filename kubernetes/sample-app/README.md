@@ -18,3 +18,6 @@ kubectl delete deployment hello-node
 
 
 ```
+
+NodePort will expose IP only to local nodes
+LoadBalancer will expose IP externally.
