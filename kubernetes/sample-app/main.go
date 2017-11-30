@@ -38,7 +38,7 @@ func main() {
 			conn.Close()
 		}
 
-		hosts := []string{"http://es:9200"}
+		hosts := []string{"http://" + os.Getenv("ELASTICSEARCH_PORT_9200_TCP_ADDR") + ":9200"}
 		login := "elastic"
 		password := "changeme"
 		options := make([]elastic.ClientOptionFunc, 0)
@@ -52,11 +52,12 @@ func main() {
 		if err != nil {
 			fmt.Fprintln(rw, "elastic error", err)
 		} else {
-			info, err := client.NodesInfo().Do(context.Background())
+
+			info, err := client.ClusterHealth().Do(context.Background())
 			if err != nil {
 				fmt.Fprintln(rw, "elastic info error", err)
 			}
-			fmt.Fprintln(rw, "cluster name", info.ClusterName)
+			fmt.Fprintln(rw, "cluster name", info)
 		}
 
 	})
