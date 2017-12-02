@@ -2,20 +2,12 @@ package pubsub
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"time"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/pkg/errors"
-
-	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
 )
-
-// ProductUpdate message identifies items to index
-type ProductUpdate struct {
-	Products []models.Product `json:"products"`
-}
 
 // Client subscribes and publishes to GCP PubSub
 type Client struct {
@@ -24,17 +16,8 @@ type Client struct {
 }
 
 // GetProducts is a blocking call that loads next message
-func (p *Client) GetProducts() ([]models.Product, error) {
-	data, ok := <-p.dataChan
-	if ok {
-		update := new(ProductUpdate)
-		err := json.Unmarshal(data, update)
-		if err != nil {
-			return nil, err
-		}
-		return update.Products, nil
-	}
-	return nil, errors.New("closed")
+func (p *Client) GetProductUpdate() <-chan []byte {
+	return p.dataChan
 }
 
 // Close will exit application
@@ -45,6 +28,7 @@ func (p *Client) Close() error {
 
 // NewClient creates a new pubsub client
 func NewClient(projectID, topicName, subscriptionName string) (*Client, error) {
+	log.Println("starting pubsub", projectID, topicName, subscriptionName)
 	ctx := context.Background()
 
 	client, err := pubsub.NewClient(ctx, projectID)
@@ -52,11 +36,13 @@ func NewClient(projectID, topicName, subscriptionName string) (*Client, error) {
 		return nil, errors.Wrap(err, "error creating client")
 	}
 
+	log.Println("create topic")
 	// Create a new topic with the given name.
 	topic, err := client.CreateTopic(ctx, topicName)
 	if err != nil {
 		topic = client.Topic(topicName)
 	}
+	log.Println("...")
 
 	sub, err := client.CreateSubscription(ctx, subscriptionName, pubsub.SubscriptionConfig{
 		Topic:       topic,
@@ -75,6 +61,8 @@ func NewClient(projectID, topicName, subscriptionName string) (*Client, error) {
 			message.Ack()
 		}))
 	}()
+
+	log.Println("done!")
 
 	return &Client{
 		client:   client,

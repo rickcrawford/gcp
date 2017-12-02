@@ -1,0 +1,38 @@
+# kubectl create secret generic google-key --from-file=key.json=gcp-credential.json
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: autocomplete
+  labels:
+    app: autocomplete
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autocomplete
+  template:
+    metadata:
+      labels:
+        app: autocomplete
+    spec:
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: google-key
+      containers:
+      - name: autocomplete
+        image: gcr.io/typeahead-183622/github-rickcrawford-gcp-autocomplete.es:04b5156f8c327adc0aee2bdbd5ef406126156aae
+        volumeMounts:
+        - name: google-cloud-key
+          mountPath: /var/secrets/google
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/google/key.json
+        - name: HTTP_PORT
+          value: "80"
+        - name: ELASTIC_URL
+          value: http://elasticsearch:9200
+        - name: REDIS_URL
+          value: redis://redis:6379
+        ports:
+        - containerPort: 80

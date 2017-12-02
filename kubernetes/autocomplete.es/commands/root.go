@@ -38,6 +38,9 @@ func init() {
 	// config
 	viper.BindPFlag("conf-dir", RootCmd.PersistentFlags().Lookup("conf-dir"))
 	viper.BindPFlag("elastic-url", RootCmd.PersistentFlags().Lookup("elastic-url"))
+	viper.BindPFlag("elastic-login", RootCmd.PersistentFlags().Lookup("elastic-login"))
+	viper.BindPFlag("elastic-password", RootCmd.PersistentFlags().Lookup("elastic-password"))
+	viper.BindPFlag("elastic-index-name", RootCmd.PersistentFlags().Lookup("elastic-index-name"))
 	viper.BindPFlag("redis-url", RootCmd.PersistentFlags().Lookup("redis-url"))
 	viper.BindPFlag("project-id", RootCmd.PersistentFlags().Lookup("project-id"))
 	viper.BindPFlag("topic-name", RootCmd.PersistentFlags().Lookup("topic-name"))

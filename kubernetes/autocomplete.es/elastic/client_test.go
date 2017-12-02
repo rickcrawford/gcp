@@ -1,14 +1,21 @@
 package elastic
 
 import (
+	"os"
 	"strconv"
 	"testing"
 
-	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
+	"github.com/rickcrawford/gcp/common/models"
 )
 
 func TestClient(t *testing.T) {
-	client, err := NewClient([]string{"http://localhost:9200"}, "elastic", "changeme", "testindex", true)
+	esClientURL := os.Getenv("ELASTIC_URL")
+	if esClientURL == "" {
+		t.Log("No elastic client to test with")
+		return
+	}
+
+	client, err := NewClient([]string{esClientURL}, "elastic", "changeme", "testindex", true, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

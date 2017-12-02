@@ -2,6 +2,7 @@ package elastic
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"os"
 	"strconv"
@@ -9,7 +10,8 @@ import (
 
 	elastic "gopkg.in/olivere/elastic.v5"
 
-	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
+	"github.com/rickcrawford/gcp/common/models"
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/pubsub"
 )
 
 const mappingType = "product"
@@ -108,8 +110,11 @@ const mapping = `
 
 // Client is an ES client for searching our application
 type Client struct {
-	client    *elastic.Client
+	client       *elastic.Client
+	pubSubClient *pubsub.Client
+
 	indexName string
+	exit      chan interface{}
 }
 
 // Index product
@@ -142,7 +147,7 @@ func (c *Client) Index(product *models.Product) error {
 // BulkIndex products
 func (c *Client) BulkIndex(products []models.Product) error {
 	ctx := context.Background()
-	bulkReq := c.client.Bulk().Index(c.indexName)
+	bulkReq := c.client.Bulk().Index(c.indexName).Type(mappingType)
 
 	for i := range products {
 		ID := strconv.Itoa(products[i].SKU)
@@ -209,8 +214,26 @@ func (c *Client) Delete(sku int) error {
 	ctx := context.Background()
 	_, err := c.client.Delete().
 		Index(c.indexName).
+		Type(mappingType).
 		Id(strconv.Itoa(sku)).
 		Do(ctx)
+	return err
+}
+
+// BulkDelete products
+func (c *Client) BulkDelete(skus []int) error {
+	ctx := context.Background()
+	bulkReq := c.client.Bulk().Index(c.indexName).Type(mappingType)
+
+	for i := range skus {
+		req := elastic.NewBulkDeleteRequest().Index(c.indexName).Id(strconv.Itoa(skus[i]))
+		bulkReq = bulkReq.Add(req)
+	}
+
+	_, err := bulkReq.Do(ctx)
+	if err == nil {
+		_, err = c.client.Flush().Index(c.indexName).Do(ctx)
+	}
 	return err
 }
 
@@ -221,8 +244,55 @@ func (c *Client) DeleteIndex() error {
 	return err
 }
 
+// Close exits any processes
+func (c *Client) Close() error {
+	close(c.exit)
+	return nil
+}
+
+// updateProcessor will read messages off of a queue and process them.
+func (c *Client) updateProcessor() {
+	log.Println("--- starting update processor ---")
+
+	var update *models.Message
+	var err error
+	for {
+		select {
+		case data := <-c.pubSubClient.GetProductUpdate():
+			log.Println("--- processing an update ---")
+
+			update = new(models.Message)
+			if err = json.Unmarshal(data, update); err == nil {
+
+				switch update.Type {
+				case models.MessageTypeDelete:
+					skus := make([]int, len(update.Products))
+					for i := range update.Products {
+						skus[i] = update.Products[i].SKU
+					}
+					err = c.BulkDelete(skus)
+				case models.MessageTypeUpdate:
+					err = c.BulkIndex(update.Products)
+				}
+			}
+
+			log.Println("update!")
+
+			if err != nil {
+				log.Println("error processing update", err)
+			}
+
+		case <-c.exit:
+			return
+		}
+
+	}
+}
+
 // NewClient creates an es client
-func NewClient(hosts []string, login, password, indexName string, debug bool) (*Client, error) {
+func NewClient(hosts []string, login, password, indexName string, debug bool, pubSubClient *pubsub.Client) (*Client, error) {
+	log.Println("starting elastic", hosts, login, password, indexName)
+
 	options := make([]elastic.ClientOptionFunc, 0)
 	options = append(options, elastic.SetSniff(false), elastic.SetURL(hosts...))
 	if login != "" {
@@ -253,5 +323,18 @@ func NewClient(hosts []string, login, password, indexName string, debug bool) (*
 			// Not acknowledged
 		}
 	}
-	return &Client{client, indexName}, nil
+
+	esClient := &Client{
+		client:       client,
+		indexName:    indexName,
+		pubSubClient: pubSubClient,
+		exit:         make(chan interface{}),
+	}
+
+	if pubSubClient != nil {
+		go esClient.updateProcessor()
+	}
+
+	log.Println("done!")
+	return esClient, nil
 }
