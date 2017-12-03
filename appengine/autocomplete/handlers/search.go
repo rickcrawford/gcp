@@ -37,6 +37,9 @@ func (h searchHandler) search(w http.ResponseWriter, r *http.Request) {
 	var query string
 	if r.FormValue("q") != "" {
 		prefix := common.FormatPrefix(r.FormValue("q"), "_")
+		if len(prefix) > managers.MaxPrefixLength {
+			prefix = prefix[:managers.MaxPrefixLength]
+		}
 		query = fmt.Sprintf("prefix:%s", prefix)
 	} else if r.FormValue("q") != "" {
 		query = r.FormValue("q")

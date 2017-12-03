@@ -15,8 +15,6 @@ func GetRoutes(titles managers.Searcher) http.Handler {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.DefaultCompress)
 
-	router.Get("/", indexHandler)
-	router.Get("/script.js", scriptHandler)
 	router.Get("/titles", newTitleHandler(titles).search)
 
 	return router

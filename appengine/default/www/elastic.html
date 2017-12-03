@@ -1,11 +1,3 @@
-package handlers
-
-import (
-	"fmt"
-	"net/http"
-)
-
-const indexContent = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -13,7 +5,7 @@ const indexContent = `
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>App Engine Datastore/Search</title>
+    <title>Elasticsearch - Typeahead</title>
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -21,48 +13,50 @@ const indexContent = `
     <!-- Optional theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
   </head>
   <body>
-
       <div class="container">
 
       <div>
-        <h1>App Engine Datastore/Search</h1>
+        <h1>Elaticsearch</h1>
 
-        <form onsubmit="return false;">
-            <input id="hero-demo" autofocus type="text" name="q" class="form-control" style="width:500px">
+        <form onsubmit="return false;" class="form-inline">
+            <div class="form-group">
+              <input id="hero-demo" autofocus type="text" name="q" class="form-control" style="width:500px">
+            </div>
+            <div class="form-group">
+              <select onchange="window._searchType = $(this).val()">
+                <option value="0">Prefix</option>
+                <option value="1">Suggest</option>
+                <option value="2">Autocomplete</option>
+                <option value="3">Search</option>
+              </select>
+            </div>
+
         </form>
       </div>
 
     </div><!-- /.container -->
 
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
-   
-    <script async src="/script.js?TA_CLIENT_ID=694ce192fcf54e258bbd821e6afdb61e&BATCH_ID=%s"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+    <script async src="/js/script.js"></script>
     <script type="text/javascript">
         window._ta = window._ta || [];
         function typeahead(){_ta.push(arguments)};
         typeahead('TA_CLIENT_ID', '694ce192fcf54e258bbd821e6afdb61e', 'input[name="q"]');
         typeahead('debug', true);
+        typeahead('target', 'http://localhost:8888/search');
         typeahead('minChars', 1);
         typeahead('onSelect', function(e, term, item){
            console.log(e, term, item);
         });
     </script>
 
-
   </body>
 </html>
-
-`
-
-func indexHandler(rw http.ResponseWriter, req *http.Request) {
-
-	batch := req.FormValue("BATCH_ID")
-	if batch == "" {
-		batch = "1"
-	}
-	fmt.Fprintf(rw, indexContent, batch)
-}

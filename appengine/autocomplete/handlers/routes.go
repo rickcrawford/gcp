@@ -15,9 +15,6 @@ func GetRoutes() http.Handler {
 	r.Mount("/products", newProductRouter())
 	r.Mount("/search", newSearchRouter())
 
-	r.Get("/script.js", scriptHandler)
-	r.Get("/", indexHandler)
-
 	return r
 }
 

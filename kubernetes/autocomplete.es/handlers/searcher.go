@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	redigo "github.com/garyburd/redigo/redis"
 	es "gopkg.in/olivere/elastic.v5"
@@ -28,19 +29,29 @@ type searcher struct {
 }
 
 func (s searcher) search(rw http.ResponseWriter, req *http.Request) {
-	writeResult(rw, req, s.pool, "search", s.esClient.Search)
-}
+	rw.Header().Set("Content-Type", "application/json")
 
-func (s searcher) autocomplete(rw http.ResponseWriter, req *http.Request) {
-	writeResult(rw, req, s.pool, "autocomplete", s.esClient.Autocomplete)
-}
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	if strings.EqualFold(req.Method, "HEAD") {
+		return
+	}
 
-func (s searcher) prefix(rw http.ResponseWriter, req *http.Request) {
-	writeResult(rw, req, s.pool, "prefix", s.esClient.Prefix)
-}
+	searchType, _ := strconv.Atoi(req.FormValue("type"))
+	switch searchType {
+	case 1:
+		writeResult(rw, req, s.pool, "suggest", s.esClient.Suggest)
 
-func (s searcher) suggest(rw http.ResponseWriter, req *http.Request) {
-	writeResult(rw, req, s.pool, "suggest", s.esClient.Suggest)
+	case 2:
+		writeResult(rw, req, s.pool, "autocomplete", s.esClient.Autocomplete)
+
+	case 3:
+		writeResult(rw, req, s.pool, "search", s.esClient.Search)
+
+	default:
+		writeResult(rw, req, s.pool, "prefix", s.esClient.Prefix)
+
+	}
+
 }
 
 func writeResult(rw http.ResponseWriter, req *http.Request, pool *redigo.Pool, typeName string, fn func(string, int) (*es.SearchResult, error)) {

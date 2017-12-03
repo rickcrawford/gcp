@@ -58,11 +58,14 @@ func start(sig <-chan os.Signal) bool {
 		topicName := viper.GetString("topic-name")
 		subscriptionName := viper.GetString("subscription-name")
 
-		pubSubClient, err := pubsub.NewClient(projectID, topicName, subscriptionName)
-		if err != nil {
-			log.Fatal("error starting pubsub client", err)
+		var pubSubClient *pubsub.Client
+		if topicName != "" {
+			pubSubClient, err = pubsub.NewClient(projectID, topicName, subscriptionName)
+			if err != nil {
+				log.Fatal("error starting pubsub client", err)
+			}
+			defer pubSubClient.Close()
 		}
-		defer pubSubClient.Close()
 
 		// setup Elasticsearch
 		elasticHosts := strings.Split(viper.GetString("elastic-url"), ",")

@@ -17,6 +17,10 @@ type Response struct {
 
 func makeResponse(searcher managers.Searcher, name string, rw http.ResponseWriter, req *http.Request) {
 	const defaultCount = 5
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	if strings.EqualFold(req.Method, "HEAD") {
+		return
+	}
 
 	q := strings.TrimSpace(req.FormValue("q"))
 	decoder := json.NewEncoder(rw)

@@ -65,7 +65,7 @@ const mapping = `
 					"copy_to":"name_autocomplete"
 				},
 				"name_prefix":{
-					"type":"keyword"
+					"type": "keyword"
 				},
 				"price": {
 					"type":"float"
@@ -201,7 +201,7 @@ func (c *Client) Search(text string, count int) (*elastic.SearchResult, error) {
 	ctx := context.Background()
 	return c.client.Search().
 		Index(c.indexName).
-		Query(elastic.NewTermQuery("name", text)).
+		Query(elastic.NewMatchPhrasePrefixQuery("name", text).MaxExpansions(50)).
 		Sort("name_prefix", true).
 		From(0).
 		Size(count).
