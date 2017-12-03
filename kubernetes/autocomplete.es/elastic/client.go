@@ -101,7 +101,7 @@ const mapping = `
 				},
 				"name_autocomplete":{
 					"type":"text",
-					 "analyzer": "autocomplete"
+					"analyzer": "autocomplete"
 				}
 			}
 		}

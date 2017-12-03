@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,16 +11,15 @@ import (
 	redigo "github.com/garyburd/redigo/redis"
 	es "gopkg.in/olivere/elastic.v5"
 
+	"github.com/rickcrawford/gcp/common/models"
 	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/elastic"
 )
 
 const defaultExpiresSeconds = 300
+const defaultCount = 5
 
-// Response is a response struct for results
-type Response struct {
-	Data     interface{}            `json:"data,omitempty"`
-	Errors   []string               `json:"errors,omitempty"`
-	Metadata map[string]interface{} `json:"metadata"`
+func DigestString(s string) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(s)))
 }
 
 type searcher struct {
@@ -43,16 +43,18 @@ func writeResult(rw http.ResponseWriter, req *http.Request, pool *redigo.Pool, t
 	query := req.FormValue("q")
 	count, _ := strconv.Atoi(req.FormValue("c"))
 	if count == 0 {
-		count = 10
+		count = defaultCount
 	}
 
-	resp := Response{
+	resp := models.Response{
 		Metadata: map[string]interface{}{
 			"count": count,
 			"query": query,
 			"type":  typeName,
 		},
 	}
+
+	var etag string
 
 	conn := pool.Get()
 	defer conn.Close()
@@ -65,21 +67,52 @@ func writeResult(rw http.ResponseWriter, req *http.Request, pool *redigo.Pool, t
 	log.Println("key", key)
 
 	if result, err = conn.Do("GET", key); err != nil || result == nil {
-		var searchResult interface{}
+		var searchResult *es.SearchResult
 		if searchResult, err = fn(query, count); err == nil {
-			log.Println("search result", typeName, query, count, searchResult)
+			var products []models.Product
+
+			switch typeName {
+			case "suggest":
+				for _, value := range searchResult.Suggest {
+					for _, option := range value {
+						products = make([]models.Product, len(option.Options))
+						for i, hit := range option.Options {
+							json.Unmarshal(*hit.Source, &products[i])
+						}
+					}
+				}
+
+			default:
+				products = make([]models.Product, len(searchResult.Hits.Hits))
+				for i, hit := range searchResult.Hits.Hits {
+					json.Unmarshal(*hit.Source, &products[i])
+				}
+
+			}
 
 			var data []byte
-			data, err = json.Marshal(searchResult)
+			data, err = json.Marshal(products)
 			result = data
 			_, err = conn.Do("SETEX", key, defaultExpiresSeconds, result)
+
 		}
 	} else {
 		resp.Metadata["cached"] = true
 	}
 	if err != nil {
 		resp.Errors = []string{err.Error()}
+	} else {
+		rw.Header().Add("Cache-Control", "max-age=300")
+		etag = DigestString(string([]byte(result.([]byte))))
+		resp.Metadata["etag"] = etag
+		if etag != "" && req.Header.Get("If-None-Match") == etag {
+			rw.WriteHeader(http.StatusNotModified)
+			return
+		}
+		rw.Header().Add("ETag", etag)
+
 	}
+
 	err = json.Unmarshal([]byte(result.([]byte)), &resp.Data)
 
 	status := 200
