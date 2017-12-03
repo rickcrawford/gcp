@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>App Engine</title>
+    <title>App Engine Flex</title>
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -18,15 +18,14 @@
       <div class="container">
 
       <div>
-        <h1>App Engine Datastore/Search</h1>
-
+        <h1>App Engine Flex</h1>
         <a href="/">Back</a>
 
         <p>
-          This example uses App Engine as the framework for servicing requests. It uses Cloud Datastore to store product data with a <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">RESTful API</a> for <a href="https://en.wikipedia.org/wiki/Create,_read,_update_and_delete">CRUD</a> operations. The products are indexed in the App Engine search, with a special prefix type of field that performs an exact match on the queried field.
+          This example uses App Engine Flex utilizing a container that has 2.3GB of RAM allocated to it. The entire catalog is loaded into memory using a <a href="https://en.wikipedia.org/wiki/Trie">Trie</a> data structure. 
         </p>
         <p>
-          The source for this project is available here: <a href="https://github.com/rickcrawford/gcp/tree/master/appengine/autocomplete">https://github.com/rickcrawford/gcp/tree/master/appengine/autocomplete</a>
+          The source for this project is available here: <a href="https://github.com/rickcrawford/gcp/tree/master/appengine/autocomplete.trie">https://github.com/rickcrawford/gcp/tree/master/appengine/autocomplete.trie</a>
         </p>
 
         <form onsubmit="return false;" class="form-inline">
@@ -51,7 +50,7 @@
         function typeahead(){_ta.push(arguments)};
         typeahead('TA_CLIENT_ID', '694ce192fcf54e258bbd821e6afdb61e', 'input[name="q"]');
         typeahead('debug', true);
-        typeahead('target', 'https://autocomplete-dot-typeahead-183622.appspot.com/search');
+        typeahead('target', 'https://autocomplete-trie-dot-typeahead-183622.appspot.com/titles');
         typeahead('minChars', 1);
         typeahead('onSelect', function(e, term, item){
            console.log(e, term, item);

@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>Elasticsearch - Typeahead</title>
+    <title>Elasticsearch</title>
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -19,6 +19,33 @@
 
       <div>
         <h1>Elaticsearch</h1>
+        
+        <a href="/">Back</a>
+
+        <p>
+          This project uses kubernetes to manage a cluster of pods for Elastic Search.<br /> We have 3 distinct pods:
+        </p>
+        <ol>
+          <li>Elastic Search - template cluster that will scale up as you add instances.</li>
+          <li>Redis Cluster - template cluster that will scale up as you add instances.</li>
+          <li>Autocomplete ES - a golang server that listens for changes on GCP PubSub. It updates the search index and will cache results for 5 minutes in redis.</li>
+        </ol>
+        <p>
+          With Kubernetes you can use a LoadBalancer or Ingress controller for your service. For Maximum performance, an Ingress controller is used and it is fronted by Google Cloud CDN.
+        </p>
+        <p>
+          Elastic search gives us a ton of options for searching. This index has 4 different options, depending on what you want to accomplish.
+        </p>
+        <ol>
+          <li>Default is prefix search.</li>
+          <li>Autocomplete will perform an "in-fix" search (search any term starting at the begining)</li>
+          <li>Search uses the prefix phrase search option.</li>
+          <li>Suggest uses a suggested term option. This one is great if you want to do phrase based searching with weighted values.</li>
+        </ol>
+        <p>
+          The source for this project is available here: <a href="https://github.com/rickcrawford/gcp/tree/master/kubernetes">https://github.com/rickcrawford/gcp/tree/master/kubernetes</a>
+        </p>
+
 
         <form onsubmit="return false;" class="form-inline">
             <div class="form-group">

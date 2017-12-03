@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>Autocomplete</title>
+    <title>NGrams</title>
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -18,44 +18,31 @@
       <div class="container">
 
       <div>
-        <h1>Autocomplete Examples</h1>
+        <h1>NGrams</h1>
+        <a href="/">Back</a>
 
         <p>
-          The following projects provide you autocomplete functionality of your catalog on product names. There are 3 different implementation options that build off of each other.
+          For autocomplete you may want to move on from just instant search - Bag of word models work great for this and have the added benefit of being a great source for you to analyze your catalog for SEO or related search purposes. Thankfully Google DataFlow can help you analyze these large datasets with ease.
         </p>
-        <ul>
-          <li><a href="/appengine.html">App Engine Datastore</a></li>
-          <li><a href="/trie.html">App Engine Flex</a></li>
-          <li><a href="/elastic.html">Elastic Search</a></li>
-        </ul>
+
+        <p>
+          This project has a sample dataflow projec that will analyze your corpus to ngrams of length 4. It also has the added benefit of performing this action at a category level. This allows you to bifercate your catalog by category to see what terms are most important for each root node of your taxonomy.
+        </p>
+
+        <p>
+          The source for this project is available here: <a href="https://github.com/rickcrawford/gcp/tree/master/dataflow/tokenizer">https://github.com/rickcrawford/gcp/tree/master/dataflow/tokenizer</a>
+        </p>
 
       </div>
 
-
-      <div>
-        <p>
-          If you choose to do further analysis of your catalog there are a wealth of tools available. I put together some additional sample projects for you:
-        </p>
-
-        <ul>
-          <li><a href="/resize.html">Resizing Images using Cloud Functions/PubSub</a></li>
-          <li><a href="/beacon.html">RUM Beacon for BigQuery</a></li>
-          <li><a href="/ngrams.html">NGrams with Dataflow</a></li>
-        </ul>
-      </div>
-
-
-        Git repo: <a href="https://github.com/rickcrawford/gcp/">https://github.com/rickcrawford/gcp/</a>
-
-    </div>
-
-
+    </div><!-- /.container -->
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
 
   </body>
 </html>

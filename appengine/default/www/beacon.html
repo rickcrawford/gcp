@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>Autocomplete</title>
+    <title>Beacon</title>
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -18,38 +18,26 @@
       <div class="container">
 
       <div>
-        <h1>Autocomplete Examples</h1>
+        <h1>Beacon</h1>
+        
+        <a href="/">Back</a>
 
         <p>
-          The following projects provide you autocomplete functionality of your catalog on product names. There are 3 different implementation options that build off of each other.
+          What good is autocomplete if you can't record the user's interaction with your catalog. Traditional tools like Google Analytics are great for client side interactions, but when it comes to analysis of client interactions at the Edge, you need to look at a <a href="https://en.wikipedia.org/wiki/Real_user_monitoring">Real User Monitoring solution</a> (RUM) for capturing these events. Just looking at server logs isn't enough because <a href="https://en.wikipedia.org/wiki/Content_delivery_network">Content Delivery Networks</a> (CDNs) will cache your responses so you only see part of the picture.
         </p>
-        <ul>
-          <li><a href="/appengine.html">App Engine Datastore</a></li>
-          <li><a href="/trie.html">App Engine Flex</a></li>
-          <li><a href="/elastic.html">Elastic Search</a></li>
-        </ul>
+
+        <p>
+          This project uses Google Cloud Functions to capture every request using a 1x1 gif. The request is then pushed onto Google PubSub for analysis offline in Google Big Query. This provides us the ability to instrument events like - Search, Select, View. The end results of these interactions can then be fed back into our project.
+        </p>
+
+        <p>
+          The source for this project is available here: <a href="https://github.com/rickcrawford/gcp/tree/master/cloudfunctions/beacon">https://github.com/rickcrawford/gcp/tree/master/cloudfunctions/beacon</a>
+        </p>
+
 
       </div>
 
-
-      <div>
-        <p>
-          If you choose to do further analysis of your catalog there are a wealth of tools available. I put together some additional sample projects for you:
-        </p>
-
-        <ul>
-          <li><a href="/resize.html">Resizing Images using Cloud Functions/PubSub</a></li>
-          <li><a href="/beacon.html">RUM Beacon for BigQuery</a></li>
-          <li><a href="/ngrams.html">NGrams with Dataflow</a></li>
-        </ul>
-      </div>
-
-
-        Git repo: <a href="https://github.com/rickcrawford/gcp/">https://github.com/rickcrawford/gcp/</a>
-
-    </div>
-
-
+    </div><!-- /.container -->
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
