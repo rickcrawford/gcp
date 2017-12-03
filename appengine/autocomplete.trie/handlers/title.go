@@ -11,6 +11,8 @@ type titleHandler struct {
 }
 
 func (t titleHandler) search(rw http.ResponseWriter, req *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
 	makeResponse(t.titles, "titles", rw, req)
 }
 

@@ -3,15 +3,62 @@ package managers
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/search"
 
 	"github.com/rickcrawford/gcp/appengine/autocomplete/common"
-	"github.com/rickcrawford/gcp/appengine/autocomplete/models"
+	"github.com/rickcrawford/gcp/common/models"
 )
+
+const MaxPrefixLength = 10
+
+// SearchQuery is a query to perform
+type SearchQuery struct {
+	Limit int
+	Query string
+}
+
+// SearchProduct implements the search loader interface
+type SearchProduct struct {
+	SKU  string
+	Name string
+}
+
+// Load is for search indexing
+func (p *SearchProduct) Load(fields []search.Field, meta *search.DocumentMetadata) error {
+	// Load the title field, failing if any other field is found.
+	for _, f := range fields {
+		switch f.Name {
+		case "SKU":
+			p.SKU = f.Value.(string)
+		case "Name":
+			p.Name = f.Value.(string)
+		}
+	}
+	return nil
+}
+
+// Save is for search indexing.
+func (p *SearchProduct) Save() ([]search.Field, *search.DocumentMetadata, error) {
+	fields := []search.Field{
+		{Name: "SKU", Value: p.SKU},
+		{Name: "Name", Value: p.Name},
+	}
+
+	prefix := common.FormatPrefix(p.Name, "_")
+	for i := range prefix {
+		fields = append(fields, search.Field{Name: "prefix", Value: prefix[0:i]})
+		if i == MaxPrefixLength {
+			break
+		}
+	}
+	fields = append(fields, search.Field{Name: "prefix_sort", Value: prefix})
+
+	return fields, nil, nil
+}
 
 const maxProducts = 200
 
@@ -20,38 +67,34 @@ var ErrTooManyProducts = errors.New("too many products")
 
 // ProductManager gets product data
 type ProductManager interface {
-	Get(context.Context, string, string) (*models.Product, error)
-	Delete(context.Context, string, string) error
-	Save(context.Context, string, *models.Product) error
-	SaveAll(context.Context, string, []models.Product) error
-	List(context.Context, string, int, int) ([]models.Product, error)
-	Search(context.Context, string, models.SearchQuery) ([]models.Product, error)
+	Get(context.Context, int) (*models.Product, error)
+	Delete(context.Context, int) error
+	Save(context.Context, *models.Product) error
+	SaveAll(context.Context, []models.Product) error
+	List(context.Context, int, int) ([]models.Product, error)
+	Search(context.Context, SearchQuery) ([]models.Product, error)
 }
 
 var _ ProductManager = (*productManager)(nil)
 
 type productManager struct{}
 
-func (productManager) Get(ctx context.Context, catalogID, productID string) (*models.Product, error) {
-	nctx, _ := appengine.Namespace(ctx, catalogID)
-
+func (productManager) Get(ctx context.Context, SKU int) (*models.Product, error) {
 	product := new(models.Product)
-	key := productKey(nctx, productID)
-	err := datastore.Get(nctx, key, product)
+	key := productKey(ctx, SKU)
+	err := datastore.Get(ctx, key, product)
 	if err == datastore.ErrNoSuchEntity {
 		return nil, nil
 	}
 	return product, err
 }
 
-func (productManager) Delete(ctx context.Context, catalogID, productID string) error {
-	nctx, _ := appengine.Namespace(ctx, catalogID)
-
-	key := productKey(nctx, productID)
-	return datastore.Delete(nctx, key)
+func (productManager) Delete(ctx context.Context, SKU int) error {
+	key := productKey(ctx, SKU)
+	return datastore.Delete(ctx, key)
 }
 
-func (productManager) SaveAll(ctx context.Context, catalogID string, products []models.Product) error {
+func (productManager) SaveAll(ctx context.Context, products []models.Product) error {
 	if len(products) > maxProducts {
 		return ErrTooManyProducts
 	}
@@ -61,42 +104,38 @@ func (productManager) SaveAll(ctx context.Context, catalogID string, products []
 		return err
 	}
 
-	nctx, _ := appengine.Namespace(ctx, catalogID)
-
 	now := time.Now()
 	keys := make([]*datastore.Key, len(products))
 	ids := make([]string, len(products))
 	searchProducts := make([]interface{}, len(products))
 
 	for i, product := range products {
-		keys[i] = productKey(nctx, product.ProductID)
-		ids[i] = product.ProductID
+		keys[i] = productKey(ctx, product.SKU)
+		ids[i] = strconv.Itoa(product.SKU)
 
-		products[i].UpdatedAt = now
-		if products[i].CreatedAt == common.NullTime {
-			products[i].CreatedAt = now
+		products[i].Updated = now
+		searchProducts[i] = &SearchProduct{
+			SKU:  strconv.Itoa(products[i].SKU),
+			Name: products[i].Name,
 		}
-		searchProducts[i] = &models.SearchProduct{products[i]}
 	}
-	if _, err = datastore.PutMulti(nctx, keys, products); err != nil {
+	if _, err = datastore.PutMulti(ctx, keys, products); err != nil {
 		return err
 	}
 
-	_, err = index.PutMulti(nctx, ids, searchProducts)
+	_, err = index.PutMulti(ctx, ids, searchProducts)
 	return err
 }
 
-func (p productManager) Save(ctx context.Context, catalogID string, product *models.Product) error {
-	return p.SaveAll(ctx, catalogID, []models.Product{*product})
+func (p productManager) Save(ctx context.Context, product *models.Product) error {
+	return p.SaveAll(ctx, []models.Product{*product})
 }
 
-func (productManager) List(ctx context.Context, catalogID string, limit int, offset int) ([]models.Product, error) {
-	nctx, _ := appengine.Namespace(ctx, catalogID)
-
+func (productManager) List(ctx context.Context, limit int, offset int) ([]models.Product, error) {
 	query := datastore.NewQuery(productTypeName).Limit(limit).Offset(offset)
 	products := make([]models.Product, 0, limit)
 
-	_, err := query.GetAll(nctx, &products)
+	_, err := query.GetAll(ctx, &products)
 	if err != nil {
 		return nil, err
 	}
@@ -104,16 +143,14 @@ func (productManager) List(ctx context.Context, catalogID string, limit int, off
 	return products, nil
 }
 
-func (productManager) Search(ctx context.Context, catalogID string, query models.SearchQuery) ([]models.Product, error) {
+func (productManager) Search(ctx context.Context, query SearchQuery) ([]models.Product, error) {
 	index, err := search.Open(productIndexName)
 	if err != nil {
 		return nil, err
 	}
 
-	nctx, _ := appengine.Namespace(ctx, catalogID)
-
 	products := make([]models.Product, 0)
-	result := index.Search(nctx, query.Query, &search.SearchOptions{
+	result := index.Search(ctx, query.Query, &search.SearchOptions{
 		Limit: query.Limit,
 		Sort: &search.SortOptions{
 			Expressions: []search.SortExpression{{Expr: "prefix_sort", Reverse: true}},
@@ -121,7 +158,7 @@ func (productManager) Search(ctx context.Context, catalogID string, query models
 	})
 
 	for {
-		var product models.SearchProduct
+		var product SearchProduct
 		_, err = result.Next(&product)
 		if err == search.Done {
 			break
@@ -129,7 +166,8 @@ func (productManager) Search(ctx context.Context, catalogID string, query models
 		if err != nil {
 			return nil, err
 		}
-		products = append(products, product.Product)
+		SKU, _ := strconv.Atoi(product.SKU)
+		products = append(products, models.Product{SKU: SKU, Name: product.Name})
 	}
 
 	return products, nil

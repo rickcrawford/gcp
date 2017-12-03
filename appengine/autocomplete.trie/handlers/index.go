@@ -3,8 +3,6 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
 )
 
 const indexContent = `
@@ -15,7 +13,7 @@ const indexContent = `
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>Elastic Search</title>
+    <title>Trie Search</title>
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -31,7 +29,7 @@ const indexContent = `
       <div class="container">
 
       <div>
-        <h1>Elastic Search</h1>
+        <h1>Trie Search</h1>
 
         <form onsubmit="return false;">
             <input id="hero-demo" autofocus type="text" name="q" class="form-control" style="width:500px">
@@ -42,7 +40,7 @@ const indexContent = `
 
 
    
-    <script async src="/script.js?TA_CLIENT_ID=694ce192fcf54e258bbd821e6afdb61e&BATCH_ID=%s&type=%d"></script>
+    <script async src="/script.js?TA_CLIENT_ID=694ce192fcf54e258bbd821e6afdb61e&BATCH_ID=%s"></script>
     <script type="text/javascript">
         window._ta = window._ta || [];
         function typeahead(){_ta.push(arguments)};
@@ -61,11 +59,10 @@ const indexContent = `
 `
 
 func indexHandler(rw http.ResponseWriter, req *http.Request) {
-	searchType, _ := strconv.Atoi(strings.TrimPrefix(req.URL.Path, "/"))
 
 	batch := req.FormValue("BATCH_ID")
 	if batch == "" {
 		batch = "1"
 	}
-	fmt.Fprintf(rw, indexContent, batch, searchType)
+	fmt.Fprintf(rw, indexContent, batch)
 }

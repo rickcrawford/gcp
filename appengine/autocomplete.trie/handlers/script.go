@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -67,7 +66,7 @@ function track(event, args) {
 var defaultRenderer = function(item, search) {
     search = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     var re = new RegExp("(" + search.split(' ').join('|') + ")", "gi");
-    return '<div class="autocomplete-suggestion" data-val="' + item.name + '" class="row"><img class="img-rounded" width=50 height=50 src="' + item.content + '" /> ' + item.name.replace(re, "<b>$1</b>") + '</div>';
+    return '<div class="autocomplete-suggestion" data-val="' + item.name + '"><img class="img-rounded" width=50 height=50 src="' + item.content + '" /> ' + item.name.replace(re, "<b>$1</b>") + '</div>';
 }
 
 var defaultOnSelect = function(e, term, item){};
@@ -124,10 +123,9 @@ var xhr;
 new autoComplete({
 	selector: selector,
 	minChars: minChars,
-	cache: 0,
 	source: function(term, response){
 		try { xhr.abort(); } catch(e){ }
-		xhr = $.getJSON('/%s', { q: term, batch: '%s' }, function(result){ 
+		xhr = $.getJSON('/titles', { q: term, batch: '%s' }, function(result){ 
 			logger('result', result)
 			if (!result.data) {
 				return;
@@ -159,7 +157,7 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := r.FormValue("TA_CLIENT_ID")
-	batch := r.FormValue("batch")
+	batch := r.FormValue("TA_BATCH_ID")
 
 	w.Header().Set("Content-Type", "application/javascript")
 
@@ -168,22 +166,5 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 		scheme = "http"
 	}
 
-	searchType, _ := strconv.Atoi(r.FormValue("type"))
-	var searchName string
-	switch searchType {
-	case 1:
-		searchName = "search"
-
-	case 2:
-		searchName = "autocomplete"
-
-	case 3:
-		searchName = "suggest"
-
-	default:
-		searchName = "prefix"
-
-	}
-
-	fmt.Fprintf(w, scriptTemplate, jqueryScript, autocompleteScript, scheme, r.Host, "autocomplete", id, autocompleteCSSFixed, searchName, batch)
+	fmt.Fprintf(w, scriptTemplate, jqueryScript, autocompleteScript, scheme, r.Host, "autocomplete", id, autocompleteCSSFixed, batch)
 }

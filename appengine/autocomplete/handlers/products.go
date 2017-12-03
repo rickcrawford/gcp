@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi"
 
 	"github.com/rickcrawford/gcp/appengine/autocomplete/common"
 	"github.com/rickcrawford/gcp/appengine/autocomplete/managers"
-	"github.com/rickcrawford/gcp/appengine/autocomplete/models"
+	"github.com/rickcrawford/gcp/common/models"
 )
 
 type productCtxID int
@@ -22,7 +23,9 @@ type productHandler struct {
 }
 
 func (productHandler) get(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(common.Response{
+	w.Header().Set("Content-Type", "application/json")
+
+	json.NewEncoder(w).Encode(models.Response{
 		Data: r.Context().Value(productCtxKey),
 		Metadata: map[string]interface{}{
 			"status": http.StatusOK,
@@ -31,13 +34,14 @@ func (productHandler) get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h productHandler) saveBatch(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
 		common.WriteBadRequest(w)
 		return
 	}
 
 	ctx := r.Context()
-	catalog := ctx.Value(catalogCtxKey).(*models.Catalog)
 
 	var products []models.Product
 	err := json.NewDecoder(r.Body).Decode(&products)
@@ -47,13 +51,13 @@ func (h productHandler) saveBatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.manager.SaveAll(ctx, catalog.CatalogID, products)
+	err = h.manager.SaveAll(ctx, products)
 	if err != nil {
 		common.WriteError(w, err)
 		return
 	}
 
-	json.NewEncoder(w).Encode(common.Response{
+	json.NewEncoder(w).Encode(models.Response{
 		Metadata: map[string]interface{}{
 			"status": http.StatusOK,
 			"count":  len(products),
@@ -62,12 +66,16 @@ func (h productHandler) saveBatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h productHandler) save(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	ctx := r.Context()
 	product := &models.Product{}
 	h.update(w, r.WithContext(context.WithValue(ctx, productCtxKey, product)))
 }
 
 func (h productHandler) update(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
 		common.WriteBadRequest(w)
 		return
@@ -75,7 +83,6 @@ func (h productHandler) update(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	product := ctx.Value(productCtxKey).(*models.Product)
-	catalog := ctx.Value(catalogCtxKey).(*models.Catalog)
 
 	err := json.NewDecoder(r.Body).Decode(product)
 	r.Body.Close()
@@ -84,13 +91,13 @@ func (h productHandler) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.manager.Save(ctx, catalog.CatalogID, product)
+	err = h.manager.Save(ctx, product)
 	if err != nil {
 		common.WriteError(w, err)
 		return
 	}
 
-	json.NewEncoder(w).Encode(common.Response{
+	json.NewEncoder(w).Encode(models.Response{
 		Data: product,
 		Metadata: map[string]interface{}{
 			"status": http.StatusOK,
@@ -99,17 +106,18 @@ func (h productHandler) update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h productHandler) delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	ctx := r.Context()
 	product := ctx.Value(productCtxKey).(*models.Product)
-	catalog := ctx.Value(catalogCtxKey).(*models.Catalog)
 
-	err := h.manager.Delete(ctx, catalog.CatalogID, product.ProductID)
+	err := h.manager.Delete(ctx, product.SKU)
 	if err != nil {
 		common.WriteError(w, err)
 		return
 	}
 
-	json.NewEncoder(w).Encode(common.Response{
+	json.NewEncoder(w).Encode(models.Response{
 		Metadata: map[string]interface{}{
 			"status": http.StatusOK,
 		},
@@ -121,10 +129,11 @@ func (h productHandler) context(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		catalog := ctx.Value(catalogCtxKey).(*models.Catalog)
-		productID := chi.URLParam(r, "productID")
+		SKUstr := chi.URLParam(r, "productID")
 
-		product, _ := h.manager.Get(ctx, catalog.CatalogID, productID)
+		SKU, _ := strconv.Atoi(SKUstr)
+
+		product, _ := h.manager.Get(ctx, SKU)
 		if product == nil {
 			common.WriteNotFound(w)
 			return

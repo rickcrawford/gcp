@@ -21,8 +21,12 @@ func GetRoutes(esClient *elastic.Client, pool *redigo.Pool) http.Handler {
 	r.Get("/search", searchHandler.search)
 	r.Get("/autocomplete", searchHandler.autocomplete)
 	r.Get("/suggest", searchHandler.suggest)
+	r.Get("/prefix", searchHandler.prefix)
 	r.Get("/script.js", scriptHandler)
 	r.Get("/", indexHandler)
+	r.Get("/1", indexHandler)
+	r.Get("/2", indexHandler)
+	r.Get("/3", indexHandler)
 
 	// r.Get("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// 	ctx := r.Context()

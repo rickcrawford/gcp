@@ -1,17 +1,18 @@
 runtime: go
 env: flex
-service: test
+service: autocomplete-trie
 
 env_variables:
   BUCKET_NAME: 'typeahead-catalogs'
   PRODUCTS_PATH: 'bestbuy/products.json.gz'
+  CONTENT_PATH: 'bestbuy/content.json.gz'
   KEYWORDS_PATH: 'output/20'
 
 resources:
-  cpu: 2
+  cpu: 1
   memory_gb: 2.3
-  disk_size_gb: 10
-  volumes:
-  - name: ramdisk1
-    volume_type: tmpfs
-    size_gb: 0.5
+  # disk_size_gb: 10
+  # volumes:
+  # - name: ramdisk1
+  #   volume_type: tmpfs
+  #   size_gb: 0.5

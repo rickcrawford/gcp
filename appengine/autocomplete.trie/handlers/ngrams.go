@@ -11,6 +11,7 @@ type ngramHandler struct {
 }
 
 func (n ngramHandler) search(rw http.ResponseWriter, req *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
 	makeResponse(n.ngrams, "ngrams", rw, req)
 }
 

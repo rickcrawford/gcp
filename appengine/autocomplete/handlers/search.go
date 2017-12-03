@@ -9,7 +9,7 @@ import (
 
 	"github.com/rickcrawford/gcp/appengine/autocomplete/common"
 	"github.com/rickcrawford/gcp/appengine/autocomplete/managers"
-	"github.com/rickcrawford/gcp/appengine/autocomplete/models"
+	"github.com/rickcrawford/gcp/common/models"
 )
 
 type searchHandler struct {
@@ -17,22 +17,14 @@ type searchHandler struct {
 }
 
 func (h searchHandler) search(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if strings.EqualFold(r.Method, "HEAD") {
 		return
 	}
 
 	ctx := r.Context()
-	catalog := ctx.Value(catalogCtxKey).(*models.Catalog)
-
-	var etag string
-	if catalog.Batch != "" {
-		etag = fmt.Sprintf(`W/"%s"`, catalog.Batch)
-		if r.Header.Get("If-None-Match") == etag {
-			w.WriteHeader(http.StatusNotModified)
-			return
-		}
-	}
 
 	limit := 10
 	if r.FormValue("limit") != "" {
@@ -42,26 +34,18 @@ func (h searchHandler) search(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	cache := 0
-	if r.FormValue("cache") != "" {
-		cacheVal, _ := strconv.Atoi(r.FormValue("cache"))
-		if cacheVal > 0 {
-			cache = cacheVal
-		}
-	}
-
 	var query string
-	if r.FormValue("prefix") != "" {
-		prefix := common.FormatPrefix(r.FormValue("prefix"), "_")
+	if r.FormValue("q") != "" {
+		prefix := common.FormatPrefix(r.FormValue("q"), "_")
 		query = fmt.Sprintf("prefix:%s", prefix)
-	} else if r.FormValue("query") != "" {
-		query = r.FormValue("query")
+	} else if r.FormValue("q") != "" {
+		query = r.FormValue("q")
 	} else {
 		common.WriteBadRequest(w)
 		return
 	}
 
-	products, err := h.manager.Search(ctx, catalog.CatalogID, models.SearchQuery{
+	products, err := h.manager.Search(ctx, managers.SearchQuery{
 		Query: query,
 		Limit: limit,
 	})
@@ -70,21 +54,12 @@ func (h searchHandler) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if cache > 0 {
-		w.Header().Add("Cache-Control", fmt.Sprintf("max-age=%d", cache))
-	}
-
-	if etag != "" {
-		w.Header().Add("ETag", etag)
-	}
-
-	json.NewEncoder(w).Encode(common.Response{
+	json.NewEncoder(w).Encode(models.Response{
 		Data: products,
 		Metadata: map[string]interface{}{
 			"status": http.StatusOK,
 			"count":  len(products),
 			"query":  query,
-			"cache":  cache,
 		},
 	})
 }

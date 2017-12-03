@@ -35,6 +35,10 @@ func (s searcher) autocomplete(rw http.ResponseWriter, req *http.Request) {
 	writeResult(rw, req, s.pool, "autocomplete", s.esClient.Autocomplete)
 }
 
+func (s searcher) prefix(rw http.ResponseWriter, req *http.Request) {
+	writeResult(rw, req, s.pool, "prefix", s.esClient.Prefix)
+}
+
 func (s searcher) suggest(rw http.ResponseWriter, req *http.Request) {
 	writeResult(rw, req, s.pool, "suggest", s.esClient.Suggest)
 }

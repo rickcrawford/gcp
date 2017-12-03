@@ -6,17 +6,11 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/rickcrawford/gcp/common/models"
 )
 
-// Response is a response struct for results
-type Response struct {
-	Data     interface{}            `json:"data,omitempty"`
-	Errors   []string               `json:"errors,omitempty"`
-	Metadata map[string]interface{} `json:"metadata"`
-}
-
 // MaxPrefixLength is the maximum prefix length
-const MaxPrefixLength = 10
 
 var NullTime = time.Time{}
 
@@ -24,7 +18,7 @@ var pattern = regexp.MustCompile(`[^\p{L}\p{N}]+`)
 
 func WriteNotFound(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNotFound)
-	json.NewEncoder(w).Encode(Response{
+	json.NewEncoder(w).Encode(models.Response{
 		Metadata: map[string]interface{}{
 			"status": http.StatusNotFound,
 		},
@@ -33,7 +27,7 @@ func WriteNotFound(w http.ResponseWriter) {
 
 func WriteBadRequest(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusBadRequest)
-	json.NewEncoder(w).Encode(Response{
+	json.NewEncoder(w).Encode(models.Response{
 		Metadata: map[string]interface{}{
 			"status": http.StatusBadRequest,
 		},
@@ -42,7 +36,7 @@ func WriteBadRequest(w http.ResponseWriter) {
 
 func WriteError(w http.ResponseWriter, err error) {
 	w.WriteHeader(http.StatusBadRequest)
-	json.NewEncoder(w).Encode(Response{
+	json.NewEncoder(w).Encode(models.Response{
 		Errors: []string{err.Error()},
 		Metadata: map[string]interface{}{
 			"status": http.StatusBadRequest,

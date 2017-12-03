@@ -3,6 +3,8 @@ package managers
 import (
 	"regexp"
 	"strings"
+
+	"github.com/rickcrawford/gcp/common/models"
 )
 
 type Result struct {
@@ -16,7 +18,7 @@ type Keyword struct {
 }
 
 type Searcher interface {
-	Search(string, int) (*Result, error)
+	Search(string, int) ([]models.Product, error)
 }
 
 var productPattern = regexp.MustCompile(`[^\p{L}\p{N}]+`)

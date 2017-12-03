@@ -6,9 +6,6 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"time"
-
-	"github.com/rickcrawford/gcp/appengine/autocomplete/models"
 )
 
 const autocompleteScript = `
@@ -69,7 +66,7 @@ function track(event, args) {
 var defaultRenderer = function(item, search) {
     search = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     var re = new RegExp("(" + search.split(' ').join('|') + ")", "gi");
-    return '<div class="autocomplete-suggestion" data-val="' + item.name + '">' + item.name.replace(re, "<b>$1</b>") + '</div>';
+    return '<div class="autocomplete-suggestion" data-val="' + item.name + '" class="container row"><div class="col-md-6">' + item.name.replace(re, "<b>$1</b>") + '</div></div>';
 }
 
 var defaultOnSelect = function(e, term, item){};
@@ -128,7 +125,7 @@ new autoComplete({
 	minChars: minChars,
 	source: function(term, response){
 		try { xhr.abort(); } catch(e){ }
-		xhr = $.getJSON(baseURL + '/search/' + catalogID + '/%s', { prefix: term }, function(result){ 
+		xhr = $.getJSON('/search', { q: term, batch: '%s' }, function(result){ 
 			logger('result', result)
 			if (!result.data) {
 				return;
@@ -159,48 +156,15 @@ func scriptHandler(w http.ResponseWriter, r *http.Request) {
 	if strings.EqualFold(r.Method, "HEAD") {
 		return
 	}
+	id := r.FormValue("TA_CLIENT_ID")
+	batch := r.FormValue("TA_BATCH_ID")
 
-	ctx := r.Context()
-	catalog := ctx.Value(catalogCtxKey).(*models.Catalog)
 	w.Header().Set("Content-Type", "application/javascript")
-
-	id := idPattern.ReplaceAllString(r.FormValue("TA_CLIENT_ID"), "")
-	if id != catalog.ApplicationKey {
-		w.Header().Set("Cache-Control", "no-cache")
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	var etag string
-	if catalog.Batch != "" {
-		etag = fmt.Sprintf(`W/"%s"`, catalog.Batch)
-		if r.Header.Get("If-None-Match") == etag {
-			w.WriteHeader(http.StatusNotModified)
-			return
-		}
-	}
-
-	if w.Header().Get("If-Modified-Since") != "" {
-		if modifiedSince, err := time.Parse(time.RFC822, w.Header().Get("If-Modified-Since")); err == nil && modifiedSince.Equal(catalog.UpdatedAt) {
-			w.WriteHeader(http.StatusNotModified)
-			return
-		}
-	}
-	w.Header().Set("Last-Modified", catalog.UpdatedAt.Format(time.RFC822))
-
-	if etag != "" {
-		w.Header().Set("ETag", etag)
-	}
 
 	scheme := r.URL.Scheme
 	if scheme == "" {
 		scheme = "http"
 	}
 
-	batch := catalog.Batch
-	if batch == "" {
-		batch = fmt.Sprintf("%d", catalog.UpdatedAt)
-	}
-
-	fmt.Fprintf(w, scriptTemplate, jqueryScript, autocompleteScript, scheme, r.Host, catalog.CatalogID, id, autocompleteCSSFixed, batch)
+	fmt.Fprintf(w, scriptTemplate, jqueryScript, autocompleteScript, scheme, r.Host, "autocomplete", id, autocompleteCSSFixed, batch)
 }

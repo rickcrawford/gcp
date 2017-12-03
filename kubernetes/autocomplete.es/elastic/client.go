@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	elastic "gopkg.in/olivere/elastic.v5"
@@ -14,7 +16,18 @@ import (
 	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/pubsub"
 )
 
+var pattern = regexp.MustCompile(`[^\p{L}\p{N}]+`)
+
+func formatPrefix(prefix, replacement string) string {
+	return pattern.ReplaceAllString(strings.ToLower(prefix), replacement)
+}
+
 const mappingType = "product"
+
+type SearchProduct struct {
+	models.Product
+	NamePrefix string `json:"name_prefix"`
+}
 
 const mapping = `
 {
@@ -50,6 +63,9 @@ const mapping = `
 				"name":{
 					"type":"text",
 					"copy_to":"name_autocomplete"
+				},
+				"name_prefix":{
+					"type":"keyword"
 				},
 				"price": {
 					"type":"float"
@@ -119,13 +135,17 @@ type Client struct {
 
 // Index product
 func (c *Client) Index(product *models.Product) error {
+
+	searchProduct := SearchProduct{Product: *product}
+	searchProduct.NamePrefix = formatPrefix(searchProduct.Name, "_")
+
 	ctx := context.Background()
-	ID := strconv.Itoa(product.SKU)
-	product.Updated = time.Now().UTC()
-	if product.Suggestion == nil {
-		product.Suggestion = []models.Suggestion{
+	ID := strconv.Itoa(searchProduct.SKU)
+	searchProduct.Updated = time.Now().UTC()
+	if searchProduct.Suggestion == nil {
+		searchProduct.Suggestion = []models.Suggestion{
 			{
-				Input:  product.Name,
+				Input:  searchProduct.Name,
 				Weight: 1,
 			},
 		}
@@ -135,7 +155,7 @@ func (c *Client) Index(product *models.Product) error {
 		Index(c.indexName).
 		Type(mappingType).
 		Id(ID).
-		BodyJson(product).
+		BodyJson(searchProduct).
 		Do(ctx)
 
 	if err == nil {
@@ -150,18 +170,22 @@ func (c *Client) BulkIndex(products []models.Product) error {
 	bulkReq := c.client.Bulk().Index(c.indexName).Type(mappingType)
 
 	for i := range products {
-		ID := strconv.Itoa(products[i].SKU)
-		products[i].Updated = time.Now().UTC()
-		if products[i].Suggestion == nil {
-			products[i].Suggestion = []models.Suggestion{
+
+		searchProduct := SearchProduct{Product: products[i]}
+		searchProduct.NamePrefix = formatPrefix(searchProduct.Name, "_")
+
+		ID := strconv.Itoa(searchProduct.SKU)
+		searchProduct.Updated = time.Now().UTC()
+		if searchProduct.Suggestion == nil {
+			searchProduct.Suggestion = []models.Suggestion{
 				{
-					Input:  products[i].Name,
+					Input:  searchProduct.Name,
 					Weight: 1,
 				},
 			}
 		}
 
-		req := elastic.NewBulkIndexRequest().Index(c.indexName).Type(mappingType).Id(ID).Doc(products[i])
+		req := elastic.NewBulkIndexRequest().Index(c.indexName).Type(mappingType).Id(ID).Doc(searchProduct)
 		bulkReq = bulkReq.Add(req)
 	}
 
@@ -178,6 +202,7 @@ func (c *Client) Search(text string, count int) (*elastic.SearchResult, error) {
 	return c.client.Search().
 		Index(c.indexName).
 		Query(elastic.NewTermQuery("name", text)).
+		Sort("name_prefix", true).
 		From(0).
 		Size(count).
 		Do(ctx)
@@ -189,6 +214,7 @@ func (c *Client) Autocomplete(prefix string, count int) (*elastic.SearchResult, 
 	return c.client.Search().
 		Index(c.indexName).
 		Query(elastic.NewPrefixQuery("name_autocomplete", prefix)).
+		Sort("name_prefix", true).
 		From(0).
 		Size(count).
 		Do(ctx)
@@ -204,6 +230,19 @@ func (c *Client) Suggest(prefix string, count int) (*elastic.SearchResult, error
 				Text(prefix).
 				Field("suggestion"),
 		).
+		From(0).
+		Size(count).
+		Do(ctx)
+}
+
+// Prefix performs a query
+func (c *Client) Prefix(prefix string, count int) (*elastic.SearchResult, error) {
+	prefix = formatPrefix(prefix, "_")
+	ctx := context.Background()
+	return c.client.Search().
+		Index(c.indexName).
+		Query(elastic.NewPrefixQuery("name_prefix", prefix)).
+		Sort("name_prefix", true).
 		From(0).
 		Size(count).
 		Do(ctx)

@@ -24,9 +24,9 @@ type Product struct {
 	Description  string     `json:"description"`
 	Manufacturer string     `json:"manufacturer"`
 	Model        string     `json:"model"`
-	URL          string     `json:"url"`
+	URL          string     `json:"url" datastore:",noindex"`
 	Image        string     `json:"image"`
-	Content      string     `json:"content"`
+	Content      string     `json:"content" datastore:",noindex"`
 	Updated      time.Time  `json:"updated"`
 
 	// the following fields are not part of the feed but can be used to influence results

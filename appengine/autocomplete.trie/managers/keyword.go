@@ -11,6 +11,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/fvbock/trie"
+	"github.com/rickcrawford/gcp/common/models"
 	"google.golang.org/api/iterator"
 )
 
@@ -25,36 +26,36 @@ type keywordSearcher struct {
 	trie   *trie.Trie
 }
 
-func (k keywordSearcher) Search(query string, count int) (*Result, error) {
-	prefix := FormatProductKey(query, "_")
+func (k keywordSearcher) Search(query string, count int) ([]models.Product, error) {
+	// prefix := FormatProductKey(query, "_")
 
-	keywords := make([]Keyword, 0)
-	total := 0
-	var prev *trie.MemberInfo
-	for _, member := range k.trie.PrefixMembers(prefix) {
-		if total == count {
-			break
-		}
-		if prev != nil {
-			if s, isPresent := k.lookup[member.Value]; isPresent {
-				if !strings.HasPrefix(member.Value, prev.Value) || member.Count != prev.Count {
-					keywords = append(keywords, Keyword{
-						Value: s,
-						Count: member.Count,
-					})
-					total++
-				}
-			}
-		}
+	// keywords := make([]Keyword, 0)
+	// total := 0
+	// var prev *trie.MemberInfo
+	// for _, member := range k.trie.PrefixMembers(prefix) {
+	// 	if total == count {
+	// 		break
+	// 	}
+	// 	if prev != nil {
+	// 		if s, isPresent := k.lookup[member.Value]; isPresent {
+	// 			if !strings.HasPrefix(member.Value, prev.Value) || member.Count != prev.Count {
+	// 				keywords = append(keywords, Keyword{
+	// 					Value: s,
+	// 					Count: member.Count,
+	// 				})
+	// 				total++
+	// 			}
+	// 		}
+	// 	}
 
-		prev = member
-	}
+	// 	prev = member
+	// }
 
-	result := &Result{
-		Query:    prefix,
-		Keywords: keywords,
-	}
-	return result, nil
+	// result := &Result{
+	// 	Query:    prefix,
+	// 	Keywords: keywords,
+	// }
+	return nil, nil
 }
 
 func KeywordSearcher(bucketName, path string) (Searcher, error) {
