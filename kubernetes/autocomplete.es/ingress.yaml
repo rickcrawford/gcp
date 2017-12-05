@@ -6,3 +6,5 @@ spec:
   backend:
     serviceName: autocomplete
     servicePort: 80
+  tls:
+  - secretName: tls-cert-key
