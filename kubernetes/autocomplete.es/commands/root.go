@@ -31,6 +31,8 @@ func init() {
 	RootCmd.PersistentFlags().StringP("project-id", "", "typeahead-183622", "Project ID")
 	RootCmd.PersistentFlags().StringP("topic-name", "", "updates", "PubSub Topic Name")
 	RootCmd.PersistentFlags().StringP("subscription-name", "", "autocomplete.es", "PubSub Subscription Name")
+	RootCmd.PersistentFlags().StringP("tls-certificate", "", "", "TLS Certificate")
+	RootCmd.PersistentFlags().StringP("tls-private-key", "", "", "TLS Private Key")
 	RootCmd.PersistentFlags().IntP("http-port", "", 8080, "HTTP port")
 	RootCmd.PersistentFlags().IntP("https-port", "", 8443, "HTTPS port")
 	RootCmd.PersistentFlags().BoolP("debug", "", false, "Enable debugging")

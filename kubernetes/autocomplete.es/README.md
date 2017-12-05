@@ -41,7 +41,11 @@ Use Kubernetes config map to manage secrets and environment variables for elasti
 kubectl create secret generic pubsub-key --from-file=key.json=<PATH-TO-KEY-FILE>.json
 https://cloud.google.com/kubernetes-engine/docs/tutorials/authenticating-to-cloud-platform
 
-
+# certificates
+```
+certbot certonly --manual --work-dir cert --config-dir cert --logs-dir cert --preferred-challenges dns
+kubectl create secret generic tls-cert-key --from-file=server.pem=cert/live/service.typeahead.com/fullchain.pem --from-file=privkey.pem=cert/live/service.typeahead.com/privkey.pem
+```
 
 # https://medium.com/google-cloud/code-cooking-kubernetes-e715728a578c
 # kubectl expose deployment autocomplete --target-port=80 --type=NodePort

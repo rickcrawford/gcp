@@ -19,20 +19,34 @@ spec:
       - name: google-cloud-key
         secret:
           secretName: google-key
+      - name: web-certs
+        secret:
+          secretName: tls-cert-key
       containers:
       - name: autocomplete
         image: gcr.io/typeahead-183622/github-rickcrawford-gcp-autocomplete.es:04b5156f8c327adc0aee2bdbd5ef406126156aae
         volumeMounts:
         - name: google-cloud-key
           mountPath: /var/secrets/google
+          readOnly: true
+        - name: web-certs
+          mountPath: /var/secrets/certs
+          readOnly: true
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /var/secrets/google/key.json
         - name: HTTP_PORT
           value: "80"
+        - name: HTTPS_PORT
+          value: "443"
         - name: ELASTIC_URL
           value: http://elasticsearch:9200
         - name: REDIS_URL
           value: redis://redis:6379
+        - name: TLS_CERTIFICATE
+          value: /var/secrets/certs/server.pem
+        - name: TLS_PRIVATE_KEY
+          value: /var/secrets/certs/keyfile.pem
         ports:
         - containerPort: 80
+        - containerPort: 443

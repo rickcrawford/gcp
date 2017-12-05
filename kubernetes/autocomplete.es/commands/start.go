@@ -1,11 +1,13 @@
 package commands
 
 import (
+	"crypto/tls"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -101,18 +103,46 @@ func start(sig <-chan os.Signal) bool {
 		// 	router.ServeHTTP(w, r.WithContext(ctx))
 		// }))
 
-		port := viper.GetString("http-port")
+		var wg sync.WaitGroup
 
-		srvHTTP := &http.Server{
-			Addr:    ":" + port,
-			Handler: router,
-		}
-		log.Println("started proxy http", port)
-		if err := srvHTTP.ListenAndServe(); err != http.ErrServerClosed {
-			log.Println("unexpected error from proxy", err)
-			// Send a TERM signal
-			killProcess()
-		}
+		wg.Add(2)
+		go func() {
+			port := viper.GetString("http-port")
+
+			srvHTTP := &http.Server{
+				Addr:    ":" + port,
+				Handler: router,
+			}
+			log.Println("started proxy http", port)
+			if err := srvHTTP.ListenAndServe(); err != http.ErrServerClosed {
+				log.Println("unexpected error from proxy", err)
+				// Send a TERM signal
+				killProcess()
+			}
+			wg.Done()
+		}()
+
+		go func() {
+			port := viper.GetString("https-port")
+
+			srvHTTPS := &http.Server{
+				Addr:      ":" + port,
+				Handler:   router,
+				TLSConfig: &tls.Config{},
+			}
+			log.Println("started proxy https", port)
+			certificate := viper.GetString("tls-certificate")
+			privateKey := viper.GetString("tls-private-key")
+			if err := srvHTTPS.ListenAndServeTLS(certificate, privateKey); err != http.ErrServerClosed {
+				log.Println("unexpected error from proxy", err)
+				// Send a TERM signal
+				killProcess()
+			}
+			wg.Done()
+		}()
+
+		wg.Wait()
+
 	}()
 
 	switch <-sig {

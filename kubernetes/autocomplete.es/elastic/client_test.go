@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/rickcrawford/gcp/common/models"
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
 )
 
 func TestClient(t *testing.T) {

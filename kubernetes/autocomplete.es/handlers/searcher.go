@@ -12,8 +12,8 @@ import (
 	redigo "github.com/garyburd/redigo/redis"
 	es "gopkg.in/olivere/elastic.v5"
 
-	"github.com/rickcrawford/gcp/common/models"
 	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/elastic"
+	"github.com/rickcrawford/gcp/kubernetes/autocomplete.es/models"
 )
 
 const defaultExpiresSeconds = 300
