@@ -3,8 +3,15 @@ kind: Ingress
 metadata:
   name: autocomplete
 spec:
-  backend:
-    serviceName: autocomplete
-    servicePort: 80
   tls:
-  - secretName: tls-cert-key
+  - hosts:
+    - service.typeahead.com
+    secretName: tls-cert-key
+  rules:
+  - host: service.typeahead.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: autocomplete
+          servicePort: 80

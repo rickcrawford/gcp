@@ -34,10 +34,22 @@ Systems involved
 
 
 
+
+To create service:
+```
+kubectl create -f secret.yaml
+kubectl create -f deployment.yaml
+kubectl create -f service.yaml
+kubectl create -f ingress.yaml
+kubectl get ing --watch
+BACKEND=$(kubectl get ing autocomplete -o json | jq -j '.metadata.annotations."ingress.kubernetes.io/backends"' | jq -j 'keys[0]')
+gcloud compute backend-services update $BACKEND --enable-cdn
+```
+
 TODO:
 Use Kubernetes config map to manage secrets and environment variables for elastic/redis
 
-connect to bash: kubectl exec -it autocomplete-934349197-svgtg -- /bin/bash
+connect to bash: kubectl exec -it autocomplete-2978890437-027v2 -- /bin/bash
 
 kubectl create secret generic pubsub-key --from-file=key.json=<PATH-TO-KEY-FILE>.json
 https://cloud.google.com/kubernetes-engine/docs/tutorials/authenticating-to-cloud-platform

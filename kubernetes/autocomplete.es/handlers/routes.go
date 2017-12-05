@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	redigo "github.com/garyburd/redigo/redis"
@@ -18,6 +19,9 @@ func GetRoutes(esClient *elastic.Client, pool *redigo.Pool) http.Handler {
 		pool:     pool,
 	}
 
+	r.Get("/", func(rw http.ResponseWriter, req *http.Request) {
+		fmt.Fprintln(rw, "autocomplete.es")
+	})
 	r.Get("/search", searchHandler.search)
 
 	// r.Get("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
