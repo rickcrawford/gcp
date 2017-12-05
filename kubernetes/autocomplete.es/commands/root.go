@@ -36,6 +36,7 @@ func init() {
 	RootCmd.PersistentFlags().IntP("http-port", "", 8080, "HTTP port")
 	RootCmd.PersistentFlags().IntP("https-port", "", 8443, "HTTPS port")
 	RootCmd.PersistentFlags().BoolP("debug", "", false, "Enable debugging")
+	RootCmd.PersistentFlags().BoolP("disable-h2", "", false, "Disable H2")
 
 	// config
 	viper.BindPFlag("conf-dir", RootCmd.PersistentFlags().Lookup("conf-dir"))
@@ -49,7 +50,10 @@ func init() {
 	viper.BindPFlag("subscription-name", RootCmd.PersistentFlags().Lookup("subscription-name"))
 	viper.BindPFlag("http-port", RootCmd.PersistentFlags().Lookup("http-port"))
 	viper.BindPFlag("https-port", RootCmd.PersistentFlags().Lookup("https-port"))
+	viper.BindPFlag("tls-certificate", RootCmd.PersistentFlags().Lookup("tls-certificate"))
+	viper.BindPFlag("tls-private-key", RootCmd.PersistentFlags().Lookup("tls-private-key"))
 	viper.BindPFlag("debug", RootCmd.PersistentFlags().Lookup("debug"))
+	viper.BindPFlag("disable-h2", RootCmd.PersistentFlags().Lookup("disable-h2"))
 
 	// local flags;
 	RootCmd.Flags().StringVar(&configFile, "config", "", "/path/to/config.yml")

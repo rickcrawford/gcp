@@ -126,11 +126,15 @@ func start(sig <-chan os.Signal) bool {
 			port := viper.GetString("https-port")
 
 			srvHTTPS := &http.Server{
-				Addr:         ":" + port,
-				Handler:      router,
-				TLSConfig:    &tls.Config{},
-				TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
+				Addr:      ":" + port,
+				Handler:   router,
+				TLSConfig: &tls.Config{},
 			}
+
+			if viper.GetBool("disable-h2") {
+				srvHTTPS.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
+			}
+
 			log.Println("started proxy https", port)
 			certificate := viper.GetString("tls-certificate")
 			privateKey := viper.GetString("tls-private-key")
