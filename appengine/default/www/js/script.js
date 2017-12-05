@@ -23,7 +23,7 @@ function track(event, args) {
 			params += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(args[key]);
 		}
 	}
-	var url = 'https://b.43b.io/b.gif?' + params;
+	var url = 'https://us-central1-typeahead-183622.cloudfunctions.net?' + params;
 
 
 	//

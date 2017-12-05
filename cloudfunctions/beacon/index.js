@@ -3,9 +3,13 @@
 const config = require('./config.json');
 const pubsub = require('@google-cloud/pubsub')();
 const topic = pubsub.topic(config.RESULT_TOPIC);
-const publisher = topic.publisher();
-const maxSkew = 120;
-
+const maxSkew = config.MAX_SKEW;
+const publisher = topic.publisher({
+	batching: {
+	  maxMessages: 10,
+	  maxMilliseconds: 5000
+	}
+});
 
 const emptyPNG  = new Buffer('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
 const emptyGIF  = new Buffer('R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==', 'base64');
@@ -21,6 +25,23 @@ const emptyWEBM = new Buffer('GkXfowEAAAAAAAAfQoaBAUL3gQFC8oEEQvOBCEKChHdlYm1Ch4
 const emptyFLV  = new Buffer('RkxWAQAAAAAJAAAAAA==', 'base64');
 
 
+/**
+ * Background Cloud Function to be triggered by Pub/Sub.
+ *
+ * @param {object} event The Cloud Functions event.
+ * @param {function} callback The callback function.
+ */
+exports.beaconEvent = (message, callback) => {
+  const data = message.data;
+  const requestData = JSON.parse(data ? Buffer.from(data, 'base64').toString() : '{}');
+
+  console.log(`Hello, ${requestData}!`);
+
+  message.ack();
+
+  callback();
+};
+
 
 /**
  * Publishes the result to the given pubsub topic and returns a Promise.
@@ -29,9 +50,10 @@ const emptyFLV  = new Buffer('RkxWAQAAAAAJAAAAAA==', 'base64');
  * @param {object} data The message data to publish.
  */
 function publishResult (data) {
-	let encoded = new Buffer(JSON.stringify({data: data})).toString('base64');
-	return publisher.publish(new Buffer(encoded)).then(id => console.log('id', id))
+	const encodedData = new Buffer.from(JSON.stringify(data));
+	return publisher.publish(encodedData).then(id => console.log('id', id))
 }
+
 
 /**
  * HTTP Cloud Function.
@@ -40,34 +62,41 @@ function publishResult (data) {
  * @param {Object} res Cloud Function response context.
  */
 exports.beacon = (req, res) => {
-	let filename = req.path.split('/')[1];
+	res.set('Access-Control-Allow-Origin', '*');
+
+	let url = req.url;
+	var filename = url.substring(url.lastIndexOf('/')+1);
 	if (filename == null || filename == undefined) {
-		return res.status(404).end();
+		return res.status(404).send('Not found').end();
+	}
+	if (filename.lastIndexOf('?') > 0) {
+		filename = filename.substring(0, filename.lastIndexOf('?'));
 	}
 
 	let fileArr = filename.split('.');
 	let fileType = fileArr[0];
+	if (fileType == 'data') {
+		fileType = 'e';
+	}
 	if (fileType != 'e' && fileType != 'b') {
-		return res.status(404).end();
+		return res.status(404).send('Not found').end();
 	}
 
 	let requestTime = new Date(parseInt(req.query['_rt'])).getTime();
 	let currentTime = Date.now();
 	let skew = currentTime - requestTime;
 	if (requestTime == 0 || skew/1000 > maxSkew) {
-		return res.status(400).end();
+		return res.status(400).send('Bad request').end();
 	}
 
 	let token = req.query['_tk'] || '';
 	if (token === '') {
-		return res.status(400).end();
+		return res.status(400).send('Bad request').end();
 	}
 
 	// remove the id
 	delete req.query['_rt']
 	delete req.query['_tk']
-
-
 
 	let body = {}
 	if (req.headers['content-type'] == "application/json") {
@@ -78,7 +107,7 @@ exports.beacon = (req, res) => {
 		rawHeaders: req.rawHeaders,
 		headers: req.headers,
 		originalUrl: req.originalUrl,
-		url: req.url,
+		url: url,
 		query: req.query,
 		path: req.path,
 		params: req.params,
@@ -100,7 +129,11 @@ exports.beacon = (req, res) => {
 	};
 	
 
-	let extension = fileArr[1] || 'txt';
+	var extension = 'txt';
+	if (fileArr.length > 1) {
+		extension = fileArr[1];
+	}
+
 	let contentType = "text/plain";
 	let data = emptyTXT;
 

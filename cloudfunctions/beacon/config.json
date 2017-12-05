@@ -1,3 +1,4 @@
 {
-	"RESULT_TOPIC": "beacon-requests"
+	"RESULT_TOPIC": "events",
+	"MAX_SKEW": 120
 }
