@@ -44,9 +44,9 @@ spec:
         - name: REDIS_URL
           value: redis://redis:6379
         - name: TLS_CERTIFICATE
-          value: /var/secrets/certs/server.pem
+          value: /var/secrets/certs/tls.crt
         - name: TLS_PRIVATE_KEY
-          value: /var/secrets/certs/keyfile.pem
+          value: /var/secrets/certs/tls.key
         ports:
         - containerPort: 80
         - containerPort: 443
