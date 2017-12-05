@@ -37,6 +37,7 @@ Systems involved
 TODO:
 Use Kubernetes config map to manage secrets and environment variables for elastic/redis
 
+connect to bash: kubectl exec -it autocomplete-934349197-svgtg -- /bin/bash
 
 kubectl create secret generic pubsub-key --from-file=key.json=<PATH-TO-KEY-FILE>.json
 https://cloud.google.com/kubernetes-engine/docs/tutorials/authenticating-to-cloud-platform
@@ -44,7 +45,7 @@ https://cloud.google.com/kubernetes-engine/docs/tutorials/authenticating-to-clou
 # certificates
 ```
 certbot certonly --manual --work-dir cert --config-dir cert --logs-dir cert --preferred-challenges dns
-kubectl create secret generic tls-cert-key --from-file=server.pem=cert/live/service.typeahead.com/fullchain.pem --from-file=privkey.pem=cert/live/service.typeahead.com/privkey.pem
+kubectl create secret tls tls-cert-key --key tls.key --cert tls.crt
 ```
 
 # https://medium.com/google-cloud/code-cooking-kubernetes-e715728a578c
