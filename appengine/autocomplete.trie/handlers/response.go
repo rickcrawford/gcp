@@ -66,6 +66,7 @@ func makeResponse(searcher managers.Searcher, name string, rw http.ResponseWrite
 		decoder.Encode(resp)
 		return
 	}
+	rw.Header().Add("Cache-Control", "max-age=86400")
 
 	resp.Data = results
 	decoder.Encode(resp)

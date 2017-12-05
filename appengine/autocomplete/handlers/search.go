@@ -56,6 +56,7 @@ func (h searchHandler) search(w http.ResponseWriter, r *http.Request) {
 		common.WriteError(w, err)
 		return
 	}
+	w.Header().Add("Cache-Control", "max-age=86400")
 
 	json.NewEncoder(w).Encode(models.Response{
 		Data: products,

@@ -117,7 +117,7 @@ func writeResult(rw http.ResponseWriter, req *http.Request, pool *redigo.Pool, t
 	if err != nil {
 		resp.Errors = []string{err.Error()}
 	} else {
-		rw.Header().Add("Cache-Control", "max-age=300")
+		rw.Header().Add("Cache-Control", "max-age=86400")
 		etag = DigestString(string([]byte(result.([]byte))))
 		resp.Metadata["etag"] = etag
 		if etag != "" && req.Header.Get("If-None-Match") == etag {

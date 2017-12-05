@@ -78,7 +78,7 @@
         function typeahead(){_ta.push(arguments)};
         typeahead('TA_CLIENT_ID', '694ce192fcf54e258bbd821e6afdb61e', 'input[name="q"]');
         typeahead('debug', true);
-        typeahead('target', 'http://localhost:8888/search');
+        typeahead('target', 'https://service.typeahead.com/search');
         typeahead('minChars', 1);
         typeahead('onSelect', function(e, term, item){
            console.log(e, term, item);
