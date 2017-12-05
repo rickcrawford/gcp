@@ -84,12 +84,13 @@ exports.beacon = (req, res) => {
 
 	let requestTime = new Date(parseInt(req.query['_rt'])).getTime();
 	let currentTime = Date.now();
+	let startedTime = new Date(parseInt(req.query['_st'])).getTime();
 	let skew = currentTime - requestTime;
 	if (requestTime == 0 || skew/1000 > maxSkew) {
 		return res.status(400).send('Bad request').end();
 	}
 
-	let token = req.query['_tk'] || '';
+	let token = req.query['_id'] || '';
 	if (token === '') {
 		return res.status(400).send('Bad request').end();
 	}
@@ -123,6 +124,7 @@ exports.beacon = (req, res) => {
 		time: {
 			request: requestTime,
 			current: currentTime,
+			started: startedTime,
 			skew: skew,
 		},
 		token: token,

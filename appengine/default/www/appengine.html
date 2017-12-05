@@ -51,7 +51,8 @@
         function typeahead(){_ta.push(arguments)};
         typeahead('TA_CLIENT_ID', '694ce192fcf54e258bbd821e6afdb61e', 'input[name="q"]');
         typeahead('debug', true);
-        typeahead('target', 'https://autocomplete-dot-typeahead-183622.appspot.com/search');
+        // typeahead('target', 'https://autocomplete-dot-typeahead-183622.appspot.com/search');
+        typeahead('target', 'https://service-ae1.typeahead.com/search');
         typeahead('minChars', 1);
         typeahead('onSelect', function(e, term, item){
            console.log(e, term, item);

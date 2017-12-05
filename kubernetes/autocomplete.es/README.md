@@ -46,6 +46,9 @@ BACKEND=$(kubectl get ing autocomplete -o json | jq -j '.metadata.annotations."i
 gcloud compute backend-services update $BACKEND --enable-cdn
 ```
 
+
+!!! Ingress controller keep alive has to 200 on `/` or you get sadness.
+
 TODO:
 Use Kubernetes config map to manage secrets and environment variables for elastic/redis
 

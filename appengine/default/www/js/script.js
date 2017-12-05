@@ -17,16 +17,14 @@ var started = Date.now();
 var beaconID = '';
 
 function track(event, args) {
-	var params = '_id=' + encodeURIComponent(beaconID) + '&_tn=' + Date.now() + '&_ts=' + started + '&_e=' + encodeURIComponent(event);
+	var params = '_id=' + encodeURIComponent(beaconID) + '&_rt=' + Date.now() + '&_st=' + started + '&_e=' + encodeURIComponent(event);
 	if (args) {
 		for (key in args) {
 			params += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(args[key]);
 		}
 	}
-	var url = 'https://us-central1-typeahead-183622.cloudfunctions.net?' + params;
+	var url = 'https://us-central1-typeahead-183622.cloudfunctions.net/beacon/b.gif?' + params;
 
-
-	//
 	var $d = $('<div></div>');
 	$d.html('<img src="' + url + '" />');
 	$('body').append($d);

@@ -1,0 +1,10 @@
+dispatch:
+  # Default service serves simple hostname request.
+  - url: "gcp.typeahead.com/*"
+    service: default
+   # Default service serves simple hostname request.
+  - url: "service-ae1.typeahead.com/*"
+    service: autocomplete
+  # Default service serves simple hostname request.
+  - url: "service-ae2.typeahead.com/*"
+    service: autocomplete-trie

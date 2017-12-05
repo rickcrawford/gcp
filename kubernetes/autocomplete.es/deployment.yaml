@@ -24,7 +24,7 @@ spec:
           secretName: tls-cert-key
       containers:
       - name: autocomplete
-        image: gcr.io/typeahead-183622/github-rickcrawford-gcp-autocomplete.es:166aaae355a60420f9dabc7471f4e2b6f718ecfb
+        image: gcr.io/typeahead-183622/github-rickcrawford-gcp-autocomplete.es:29533c5567c0ba2888b6e963d3986dc0817e807e
         volumeMounts:
         - name: google-cloud-key
           mountPath: /var/secrets/google
