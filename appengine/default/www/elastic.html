@@ -53,13 +53,12 @@
             </div>
             <div class="form-group">
               <select onchange="window._searchType = $(this).val()">
+                <option value="3">Search</option>
                 <option value="0">Prefix</option>
                 <option value="1">Suggest</option>
                 <option value="2">Autocomplete</option>
-                <option value="3">Search</option>
               </select>
             </div>
-
         </form>
       </div>
 
@@ -74,6 +73,7 @@
 
     <script async src="/js/script.js"></script>
     <script type="text/javascript">
+        window._searchType = 3;
         window._ta = window._ta || [];
         function typeahead(){_ta.push(arguments)};
         typeahead('TA_CLIENT_ID', '694ce192fcf54e258bbd821e6afdb61e', 'input[name="q"]');
