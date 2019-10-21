@@ -15,7 +15,7 @@ Jinja2==2.9.6
 Markdown==2.6.9
 MarkupSafe==1.0
 matplotlib==2.1.0
-nltk==3.2.5
+nltk==3.4.5
 numpy==1.13.3
 pandas==0.21.0
 protobuf==3.4.0
